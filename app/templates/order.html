@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt hàng - GuitarShop</title>
+    <link rel="stylesheet" type="text/css" href="static/css/order.css" />
+    <script src=".\static\js\order.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav>
+        <a href="home.html" class="logo">
+          <img
+            src="/mnt/user-data/uploads/1770637732281_image.png"
+            alt="GuitarShop Logo"
+          />
+          <span class="logo-text">GuitarShop</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="home.html">Trang chủ</a></li>
+          <li><a href="order.html">Sản phẩm</a></li>
+          <li><a href="#about">Giới thiệu</a></li>
+          <li><a href="#contact">Liên hệ</a></li>
+        </ul>
+        <div class="cart-icon" onclick="toggleCart()">
+          🛒
+          <span class="cart-count" id="cartCount">0</span>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+      <h1 class="page-title">Cửa hàng Guitar</h1>
+      <p class="page-subtitle">Khám phá bộ sưu tập guitar chất lượng cao</p>
+
+      <!-- Filters Section -->
+      <div class="filters-section">
+        <div class="filters-container">
+          <div class="filter-group">
+            <label for="categoryFilter">Loại:</label>
+            <select id="categoryFilter">
+              <option value="all">Tất cả</option>
+              <option value="Acoustic">Acoustic</option>
+              <option value="Electric">Electric</option>
+              <option value="Classical">Classical</option>
+              <option value="Bass">Bass</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="priceSort">Sắp xếp:</label>
+            <select id="priceSort">
+              <option value="default">Mặc định</option>
+              <option value="low">Giá thấp → cao</option>
+              <option value="high">Giá cao → thấp</option>
+            </select>
+          </div>
+
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Tìm kiếm guitar..."
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Section -->
+      <div class="products-section" id="productsSection">
+        <!-- Products will be rendered here by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+      <div class="cart-header">
+        <h2>Giỏ hàng</h2>
+        <button class="close-cart" onclick="toggleCart()">✕</button>
+      </div>
+
+      <div class="cart-items" id="cartItems">
+        <!-- Cart items will be rendered here -->
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Tổng cộng:</span>
+          <span id="cartTotal">0đ</span>
+        </div>
+        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
+          Thanh toán
+        </button>
+      </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Chi tiết sản phẩm</h2>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Modal content will be rendered here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification success" id="notification">
+      <div class="notification-content">
+        <span class="notification-icon">✅</span>
+        <span id="notificationMessage"></span>
+      </div>
+    </div>
+  </body>
+</html>

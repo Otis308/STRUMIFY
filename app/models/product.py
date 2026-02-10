@@ -1,8 +1,7 @@
-from database import Base
+from app.database.database import Base
 from sqlalchemy import Integer, String, Float, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from  typing import Optional, List
-from models.order import Order
+from typing import Optional, List
 
 class Product(Base):
     __tablename__ = "products"

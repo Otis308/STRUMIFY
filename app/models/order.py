@@ -1,10 +1,8 @@
-from database import Base
+from app.database.database import Base
 from datetime import UTC, datetime
 from sqlalchemy import DateTime, Integer, String, Float, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from  typing import Optional
-from models.user import User
-from models.product import Product
+from typing import Optional
 
 class Order(Base):
     __tablename__ = "orders"
@@ -17,5 +15,5 @@ class Order(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"))
 #Relationship
-    user: Mapped["User"] = relationship(back_populates="orders")
-    product: Mapped["Product"] = relationship()
+    user: Mapped["User"] = relationship(back_populates="orders")    
+    product: Mapped["Product"] = relationship(back_populates="orders")

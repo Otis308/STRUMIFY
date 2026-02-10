@@ -1,26 +1,26 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 
-SQLALCHEMY_DB_URL = "sqlite://./guitar_db"
+SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./guitar.db"
 
-engine = create_engine(
-    SQLALCHEMY_DB_URL, connect_args={
-        "check_same_thread" : False
+engine = create_async_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args=
+    {
+        "check_same_thread": False
     }
 )
 
-SessionLocal = sessionmaker(
-    autocommit= False,
-    autoflush= False,
-    bind = engine 
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine, 
+    class_=AsyncSession, 
+    expire_on_commit=False
 )
 
-class Base(DeclarativeBase):
-    pass
+Base = declarative_base()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
