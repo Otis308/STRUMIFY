@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr,HttpUrl
 from typing import Optional, List
 from datetime import datetime
 
@@ -7,7 +7,7 @@ class ProductBase(BaseModel):
     price : float
     description : Optional[str] = None
     brand : str
-    image_url : Optional[str] = None
+    image_url : HttpUrl
 
 class ProductCreate(ProductBase):
     pass
@@ -17,7 +17,7 @@ class ProductUpdate(BaseModel):
     price: Optional[float] = None
     description: Optional[str] = None
     brand: Optional[str] = None
-    image_url: Optional[str] = None
+    image_url: HttpUrl
 
 class ProductResponse(ProductBase):
     id : int
