@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - GuitarShop</title>
+    <link rel="stylesheet" type="text/css" href="static/css/login.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-left">
+        <div class="logo">🎸</div>
+        <h2>GuitarShop</h2>
+        <p>Nơi hội tụ những cây đàn guitar chất lượng cao nhất</p>
+        <div class="guitar-icon">🎵</div>
+        <p>Âm nhạc là ngôn ngữ của tâm hồn</p>
+      </div>
+
+      <div class="login-right">
+        <div class="login-header">
+          <h1>Đăng nhập</h1>
+          <p>Chào mừng bạn quay trở lại!</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Email hoặc Số điện thoại</label>
+            <div class="input-icon">
+              <input
+                type="text"
+                id="email"
+                name="email"
+                placeholder="Nhập email hoặc số điện thoại"
+                required
+              />
+              <i>📧</i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Mật khẩu</label>
+            <div class="input-icon">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Nhập mật khẩu"
+                required
+              />
+              <i>🔒</i>
+              <span class="password-toggle" id="togglePassword">👁️</span>
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-me">
+              <input type="checkbox" id="rememberMe" name="rememberMe" />
+              <span>Ghi nhớ đăng nhập</span>
+            </label>
+            <a href="#" class="forgot-password">Quên mật khẩu?</a>
+          </div>
+
+          <button type="submit" class="btn-login">Đăng nhập</button>
+        </form>
+
+        <div class="divider">
+          <span>Hoặc đăng nhập với</span>
+        </div>
+
+        <div class="social-login">
+          <button class="btn-social btn-google">
+            <span>🔍</span>
+            Google
+          </button>
+          <button class="btn-social btn-facebook">
+            <span>👤</span>
+            Facebook
+          </button>
+        </div>
+
+        <div class="register-link">
+          Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a>
+        </div>
+
+        <div class="back-home">
+          <a href="home.html">← Quay về trang chủ</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Password toggle visibility
+      const togglePassword = document.getElementById("togglePassword");
+      const passwordInput = document.getElementById("password");
+
+      togglePassword.addEventListener("click", function () {
+        const type =
+          passwordInput.getAttribute("type") === "password"
+            ? "text"
+            : "password";
+        passwordInput.setAttribute("type", type);
+        this.textContent = type === "password" ? "👁️" : "🙈";
+      });
+
+      // Form validation and submission
+      const loginForm = document.getElementById("loginForm");
+      const errorMessage = document.getElementById("errorMessage");
+      const successMessage = document.getElementById("successMessage");
+
+      loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Hide previous messages
+        errorMessage.style.display = "none";
+        successMessage.style.display = "none";
+
+        // Get form values
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const rememberMe = document.getElementById("rememberMe").checked;
+
+        // Validation
+        if (!email) {
+          showError("Vui lòng nhập email hoặc số điện thoại!");
+          return;
+        }
+
+        if (!password) {
+          showError("Vui lòng nhập mật khẩu!");
+          return;
+        }
+
+        if (password.length < 6) {
+          showError("Mật khẩu phải có ít nhất 6 ký tự!");
+          return;
+        }
+
+        // Email or phone validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^[0-9]{10,11}$/;
+
+        if (!emailRegex.test(email) && !phoneRegex.test(email)) {
+          showError("Email hoặc số điện thoại không hợp lệ!");
+          return;
+        }
+
+        // Simulate login (replace with actual API call)
+        simulateLogin(email, password, rememberMe);
+      });
+
+      function simulateLogin(email, password, rememberMe) {
+        // Show loading state
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.textContent = "Đang đăng nhập...";
+        submitButton.disabled = true;
+
+        // Simulate API call
+        setTimeout(() => {
+          // Demo: Accept any login for demonstration
+          // In real app, validate against backend
+          if (email && password.length >= 6) {
+            // Store user info (demo only - use secure methods in production)
+            const userData = {
+              email: email,
+              loginTime: new Date().toISOString(),
+              rememberMe: rememberMe,
+            };
+
+            if (rememberMe) {
+              localStorage.setItem("guitarshop_user", JSON.stringify(userData));
+            } else {
+              sessionStorage.setItem(
+                "guitarshop_user",
+                JSON.stringify(userData),
+              );
+            }
+
+            showSuccess("Đăng nhập thành công! Đang chuyển hướng...");
+
+            // Redirect to home page
+            setTimeout(() => {
+              window.location.href = "home.html";
+            }, 1500);
+          } else {
+            showError("Email hoặc mật khẩu không chính xác!");
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+          }
+        }, 1500);
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = "block";
+        errorMessage.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function showSuccess(message) {
+        successMessage.textContent = message;
+        successMessage.style.display = "block";
+        successMessage.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      // Social login buttons
+      document.querySelectorAll(".btn-social").forEach((button) => {
+        button.addEventListener("click", function () {
+          const platform = this.classList.contains("btn-google")
+            ? "Google"
+            : "Facebook";
+          alert(`Chức năng đăng nhập bằng ${platform} đang được phát triển!`);
+        });
+      });
+
+      // Forgot password link
+      document
+        .querySelector(".forgot-password")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          alert(
+            "Chức năng quên mật khẩu đang được phát triển!\n\nVui lòng liên hệ support@guitarshop.vn để được hỗ trợ.",
+          );
+        });
+
+      // Check if user is already logged in
+      window.addEventListener("load", function () {
+        const storedUser =
+          localStorage.getItem("guitarshop_user") ||
+          sessionStorage.getItem("guitarshop_user");
+
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          document.getElementById("email").value = user.email;
+          showSuccess(
+            "Bạn đã từng đăng nhập trước đó. Vui lòng nhập mật khẩu để tiếp tục.",
+          );
+        }
+      });
+
+      // Add enter key support for inputs
+      document.querySelectorAll("input").forEach((input) => {
+        input.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            loginForm.dispatchEvent(new Event("submit"));
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
