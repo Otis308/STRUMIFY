@@ -1,0 +1,29 @@
+{% extends "base.html" %} {% block custom_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', path='css/courses.css') }}?v=1.1"
+/>
+{% endblock %} {% block content %}
+<section class="academy-section">
+  <div class="container">
+    <header class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-graduation-cap"></i> Khóa học âm nhạc
+      </h2>
+      <p class="section-subtitle">
+        Học nhạc cụ từ cơ bản đến nâng cao với đội ngũ giảng viên chuyên nghiệp.
+      </p>
+    </header>
+
+    <div class="courses-grid" id="coursesGrid"></div>
+
+    <div class="academy-action">
+      <a href="/#courses" class="btn-all-courses">
+        <i class="fa-solid fa-book-open"></i> Xem tất cả khóa học
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block custom_js %}
+<script src="{{ url_for('static', path='js/courses.js') }}?v=1.1"></script>
+{% endblock %}

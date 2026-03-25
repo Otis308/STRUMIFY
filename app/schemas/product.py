@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr,HttpUrl
-from typing import Optional, List
+from typing import Optional, Dict, Any
 from datetime import datetime
 
 class ProductBase(BaseModel):
@@ -19,8 +19,21 @@ class ProductUpdate(BaseModel):
     brand: Optional[str] = None
     image_url: HttpUrl
 
-class ProductResponse(ProductBase):
-    id : int
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    price: Optional[float] = None
+    brand: Optional[str] = None
+    image_url: Optional[str] = None
+    cat: Optional[str] = None
+    badge: Optional[str] = None
+    orig: Optional[float] = None
+    img: Optional[str] = None
+    rating: Optional[float] = None
+    reviews: Optional[int] = None
+    specs: Optional[Dict[str, Any]] = None
+    created_at: Optional[datetime] = None
 
     class Config:
-        from_attributes = True
+        from_attributes = True  

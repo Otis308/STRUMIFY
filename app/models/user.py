@@ -1,5 +1,5 @@
 from app.database.database import Base
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
 
@@ -12,3 +12,9 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(20), default="user")
 #Realtionship
     orders: Mapped[List["Order"]] = relationship(back_populates="user")
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    
+    # Dùng TÊN CLASS dạng chuỗi "Order"
+    orders = relationship("Order", back_populates="user")

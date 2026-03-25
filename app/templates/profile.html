@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STRUMIFY – Hồ sơ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/profile.css') }}"
+    />
+  </head>
+  <body>
+    <!-- ══ TOP NAV ══════════════════════════════════ -->
+    <nav class="topnav">
+      <a href="/" class="topnav-brand">STRUMIFY</a>
+      <div class="topnav-right">
+        <span class="topnav-name" id="navName">Nguyễn Văn A</span>
+        <img
+          class="topnav-avatar avatar-preview"
+          src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=8c5a30&color=f5e4c0&bold=true&size=80"
+          alt="avatar"
+        />
+        <button class="topnav-logout" onclick="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </button>
+      </div>
+    </nav>
+
+    <!-- ══ LAYOUT ════════════════════════════════════ -->
+    <div class="profile-layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-avatar-block">
+          <div class="avatar-ring">
+            <img
+              class="avatar-preview"
+              src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=8c5a30&color=f5e4c0&bold=true&size=160"
+              alt="avatar"
+            />
+            <button
+              class="avatar-edit-btn"
+              onclick="document.getElementById('avatarInput').click()"
+              title="Đổi ảnh"
+            >
+              <i class="fa-solid fa-camera"></i>
+            </button>
+          </div>
+          <div class="sidebar-name" id="sidebarName">Nguyễn Văn A</div>
+          <div class="sidebar-nickname" id="sidebarNick">"Nhạc sĩ gỗ"</div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a
+            href="#"
+            data-section="sec-info"
+            onclick="
+              switchSection('sec-info');
+              return false;
+            "
+          >
+            <i class="fa-solid fa-circle-user"></i> Cá nhân
+          </a>
+          <div class="sidebar-divider"></div>
+          <a
+            href="#"
+            data-section="sec-orders"
+            onclick="
+              switchSection('sec-orders');
+              return false;
+            "
+          >
+            <i class="fa-solid fa-box-open"></i> Đơn hàng
+          </a>
+          <div class="sidebar-divider"></div>
+          <a
+            href="#"
+            data-section="sec-feedback"
+            onclick="
+              switchSection('sec-feedback');
+              return false;
+            "
+          >
+            <i class="fa-solid fa-comment-dots"></i> Góp ý
+          </a>
+        </nav>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="profile-main">
+        <!-- ════════════════════════════════════
+         SECTION 1 – CÁ NHÂN
+         ════════════════════════════════════ -->
+        <section class="card" id="sec-info">
+          <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-circle-user"></i></div>
+            <div>
+              <h2>Thông tin cá nhân</h2>
+              <p>Cập nhật hồ sơ và ảnh đại diện</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Avatar upload -->
+            <div class="avatar-upload-area" id="avatarUploadArea">
+              <img
+                class="avatar-preview"
+                src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=8c5a30&color=f5e4c0&bold=true&size=160"
+                alt="avatar"
+              />
+              <div class="upload-info">
+                <h4><i class="fa-solid fa-image"></i> Ảnh đại diện</h4>
+                <p>Kéo thả hoặc bấm chọn ảnh<br />JPG, PNG · Tối đa 5 MB</p>
+                <button
+                  class="btn-upload"
+                  type="button"
+                  onclick="
+                    document.getElementById('avatarInput').click();
+                    event.stopPropagation();
+                  "
+                >
+                  <i class="fa-solid fa-upload"></i> Tải ảnh lên
+                </button>
+              </div>
+              <input type="file" id="avatarInput" accept="image/*" hidden />
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label><i class="fa-solid fa-user"></i> Họ và tên</label>
+                <div class="fi">
+                  <i class="fa-solid fa-user ico"></i>
+                  <input
+                    type="text"
+                    id="fieldName"
+                    value="Nguyễn Văn A"
+                    placeholder="Họ và tên"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-star"></i> Biệt danh</label>
+                <div class="fi">
+                  <i class="fa-solid fa-star ico"></i>
+                  <input
+                    type="text"
+                    id="fieldNick"
+                    value="Nhạc sĩ gỗ"
+                    placeholder="Đặt biệt danh…"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-envelope"></i> Email</label>
+                <div class="fi">
+                  <i class="fa-solid fa-envelope ico"></i>
+                  <input
+                    type="email"
+                    id="fieldEmail"
+                    value="nguyenvana@email.com"
+                  />
+                </div>
+                <span class="badge-verified"
+                  ><i class="fa-solid fa-shield-halved"></i> Đã xác thực</span
+                >
+              </div>
+              <div class="form-group">
+                <label
+                  ><i class="fa-solid fa-mobile-screen"></i> Số điện
+                  thoại</label
+                >
+                <div class="fi">
+                  <i class="fa-solid fa-mobile-screen ico"></i>
+                  <input type="tel" id="fieldPhone" value="0901234567" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label
+                  ><i class="fa-solid fa-cake-candles"></i> Ngày sinh</label
+                >
+                <div class="fi">
+                  <i class="fa-solid fa-cake-candles ico"></i>
+                  <input type="date" id="fieldDob" value="1998-05-15" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-venus-mars"></i> Giới tính</label>
+                <div class="fi">
+                  <i class="fa-solid fa-venus-mars ico"></i>
+                  <select id="fieldGender">
+                    <option value="">Chọn giới tính</option>
+                    <option value="male" selected>Nam</option>
+                    <option value="female">Nữ</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label><i class="fa-solid fa-location-dot"></i> Địa chỉ</label>
+                <div class="fi">
+                  <i class="fa-solid fa-location-dot ico"></i>
+                  <input
+                    type="text"
+                    id="fieldAddress"
+                    value="123 Đường Lê Lợi, Quận 1, TP.HCM"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-ghost" onclick="location.reload()">
+                <i class="fa-solid fa-rotate-left"></i> Hủy
+              </button>
+              <button class="btn-primary" id="btnSave" onclick="saveProfile()">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+              </button>
+            </div>
+            <div class="toast" id="saveToast">
+              <i class="fa-solid fa-circle-check"></i> Đã lưu thông tin thành
+              công!
+            </div>
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════
+         SECTION 2 – ĐƠN HÀNG
+         ════════════════════════════════════ -->
+        <section class="card" id="sec-orders">
+          <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-box-open"></i></div>
+            <div>
+              <h2>Đơn hàng của tôi</h2>
+              <p>Theo dõi & lịch sử mua hàng</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="filter-row">
+              <button class="filter-btn active" data-filter="all">
+                <i class="fa-solid fa-list"></i> Tất cả
+              </button>
+              <button class="filter-btn" data-filter="processing">
+                <i class="fa-solid fa-clock"></i> Xử lý
+              </button>
+              <button class="filter-btn" data-filter="shipping">
+                <i class="fa-solid fa-truck"></i> Đang giao
+              </button>
+              <button class="filter-btn" data-filter="delivered">
+                <i class="fa-solid fa-circle-check"></i> Đã nhận
+              </button>
+              <button class="filter-btn" data-filter="cancelled">
+                <i class="fa-solid fa-ban"></i> Đã hủy
+              </button>
+            </div>
+
+            <div class="order-list">
+              <!-- Order 1 -->
+              <div class="order-card" data-status="shipping">
+                <div class="order-head">
+                  <div>
+                    <div class="order-id">
+                      <i class="fa-solid fa-hashtag"></i> MOC-2025-00312
+                    </div>
+                    <div class="order-date">
+                      <i class="fa-regular fa-calendar"></i> 08/03/2025
+                    </div>
+                  </div>
+                  <span class="status-badge s-shipping"
+                    ><i class="fa-solid fa-truck"></i> Đang giao</span
+                  >
+                </div>
+                <div class="order-body">
+                  <div class="order-item">
+                    <div class="item-thumb">
+                      <i class="fa-solid fa-guitar"></i>
+                    </div>
+                    <div>
+                      <div class="item-name">
+                        Guitar Acoustic STRUMIFY Spruce Top
+                      </div>
+                      <div class="item-sub">Màu: Tự nhiên · SL: 1</div>
+                    </div>
+                    <div class="item-price">4.800.000 ₫</div>
+                  </div>
+                  <div class="order-item">
+                    <div class="item-thumb">
+                      <i class="fa-solid fa-music"></i>
+                    </div>
+                    <div>
+                      <div class="item-name">Dây D'Addario EJ16</div>
+                      <div class="item-sub">12-53 · SL: 2</div>
+                    </div>
+                    <div class="item-price">280.000 ₫</div>
+                  </div>
+                </div>
+                <div class="order-foot">
+                  <div class="order-total"><span>Tổng:</span> 5.080.000 ₫</div>
+                  <button
+                    class="btn-track"
+                    onclick="openModal('MOC-2025-00312')"
+                  >
+                    <i class="fa-solid fa-map-location-dot"></i> Theo dõi
+                  </button>
+                </div>
+              </div>
+
+              <!-- Order 2 -->
+              <div class="order-card" data-status="delivered">
+                <div class="order-head">
+                  <div>
+                    <div class="order-id">
+                      <i class="fa-solid fa-hashtag"></i> MOC-2025-00287
+                    </div>
+                    <div class="order-date">
+                      <i class="fa-regular fa-calendar"></i> 22/01/2025
+                    </div>
+                  </div>
+                  <span class="status-badge s-delivered"
+                    ><i class="fa-solid fa-circle-check"></i> Đã nhận</span
+                  >
+                </div>
+                <div class="order-body">
+                  <div class="order-item">
+                    <div class="item-thumb">
+                      <i class="fa-solid fa-violin"></i>
+                    </div>
+                    <div>
+                      <div class="item-name">
+                        Ukulele Concert STRUMIFY Mahogany
+                      </div>
+                      <div class="item-sub">Nâu đậm · SL: 1</div>
+                    </div>
+                    <div class="item-price">1.950.000 ₫</div>
+                  </div>
+                </div>
+                <div class="order-foot">
+                  <div class="order-total"><span>Tổng:</span> 1.950.000 ₫</div>
+                  <button
+                    class="btn-track"
+                    onclick="openModal('MOC-2025-00287')"
+                  >
+                    <i class="fa-solid fa-clock-rotate-left"></i> Chi tiết
+                  </button>
+                </div>
+              </div>
+
+              <!-- Order 3 -->
+              <div class="order-card" data-status="processing">
+                <div class="order-head">
+                  <div>
+                    <div class="order-id">
+                      <i class="fa-solid fa-hashtag"></i> MOC-2025-00341
+                    </div>
+                    <div class="order-date">
+                      <i class="fa-regular fa-calendar"></i> 12/03/2025
+                    </div>
+                  </div>
+                  <span class="status-badge s-processing"
+                    ><i class="fa-solid fa-clock"></i> Đang xử lý</span
+                  >
+                </div>
+                <div class="order-body">
+                  <div class="order-item">
+                    <div class="item-thumb">
+                      <i class="fa-solid fa-drum"></i>
+                    </div>
+                    <div>
+                      <div class="item-name">
+                        Cajon STRUMIFY Birch Handcrafted
+                      </div>
+                      <div class="item-sub">Standard · SL: 1</div>
+                    </div>
+                    <div class="item-price">2.400.000 ₫</div>
+                  </div>
+                </div>
+                <div class="order-foot">
+                  <div class="order-total"><span>Tổng:</span> 2.400.000 ₫</div>
+                  <button
+                    class="btn-track"
+                    onclick="openModal('MOC-2025-00341')"
+                  >
+                    <i class="fa-solid fa-map-location-dot"></i> Theo dõi
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════
+         SECTION 3 – GÓP Ý
+         ════════════════════════════════════ -->
+        <section class="card" id="sec-feedback">
+          <div class="card-header">
+            <div class="card-icon">
+              <i class="fa-solid fa-comment-dots"></i>
+            </div>
+            <div>
+              <h2>Góp ý sản phẩm</h2>
+              <p>Chia sẻ trải nghiệm của bạn</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="feedback-banner">
+              <i class="fa-solid fa-lightbulb"></i>
+              <p>
+                <strong>Ý kiến của bạn rất quý giá!</strong><br />Góp ý giúp
+                STRUMIFY hoàn thiện từng sản phẩm. Hãy thật lòng nhé.
+              </p>
+            </div>
+
+            <!-- Chọn sản phẩm -->
+            <div class="form-group">
+              <label
+                ><i class="fa-solid fa-hand-pointer"></i> Chọn sản phẩm</label
+              >
+              <div class="chip-grid">
+                <div class="chip" data-product="Guitar Acoustic">
+                  <i class="fa-solid fa-guitar"></i>Guitar Acoustic
+                </div>
+                <div class="chip" data-product="Guitar Classic">
+                  <i class="fa-solid fa-guitar"></i>Guitar Classic
+                </div>
+                <div class="chip" data-product="Ukulele">
+                  <i class="fa-solid fa-music"></i>Ukulele
+                </div>
+                <div class="chip" data-product="Cajon">
+                  <i class="fa-solid fa-drum"></i>Cajon
+                </div>
+                <div class="chip" data-product="Dây đàn">
+                  <i class="fa-solid fa-wave-square"></i>Dây đàn
+                </div>
+                <div class="chip" data-product="Phụ kiện">
+                  <i class="fa-solid fa-toolbox"></i>Phụ kiện
+                </div>
+              </div>
+              <input type="hidden" id="selectedProduct" />
+            </div>
+
+            <!-- Sao -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-star"></i> Chất lượng</label>
+              <div class="stars">
+                <button class="star" type="button">★</button>
+                <button class="star" type="button">★</button>
+                <button class="star" type="button">★</button>
+                <button class="star" type="button">★</button>
+                <button class="star" type="button">★</button>
+              </div>
+              <input type="hidden" id="ratingValue" />
+            </div>
+
+            <!-- Nội dung -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-pen-to-square"></i> Nội dung</label>
+              <div class="fi">
+                <textarea
+                  class="clean"
+                  id="feedbackText"
+                  maxlength="500"
+                  placeholder="Chia sẻ cảm nhận về âm thanh, hoàn thiện, dịch vụ…"
+                ></textarea>
+              </div>
+              <div class="char-hint" id="charCount">0/500</div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-primary" onclick="submitFeedback()">
+                <i class="fa-solid fa-paper-plane"></i> Gửi góp ý
+              </button>
+            </div>
+            <div class="toast amber" id="feedbackToast">
+              <i class="fa-solid fa-circle-check"></i> Góp ý đã được gửi. Cảm ơn
+              bạn!
+            </div>
+
+            <!-- Lịch sử -->
+            <div class="section-sep">
+              <i class="fa-solid fa-clock-rotate-left"></i> Đã gửi trước đó
+            </div>
+            <div class="fb-list" id="feedbackList">
+              <div class="fb-item">
+                <div class="fb-item-head">
+                  <span class="fb-product"
+                    ><i class="fa-solid fa-guitar"></i> Guitar Acoustic</span
+                  >
+                  <span class="fb-date">22/01/2025</span>
+                </div>
+                <div class="fb-stars">★★★★★</div>
+                <p class="fb-text">
+                  Cây đàn âm thanh ấm, rất thích hợp cho nhạc dân gian. Hoàn
+                  thiện gỗ đẹp, không có vết nứt. Giao hàng cẩn thận!
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ══ TIMELINE MODAL ════════════════════════════ -->
+    <div class="modal-overlay" id="timelineModal">
+      <div class="modal-box">
+        <h3>
+          <i class="fa-solid fa-route"></i> Đơn <span id="tlOrderId"></span>
+        </h3>
+        <div class="timeline">
+          <div class="tl-step">
+            <div class="tl-dot done"><i class="fa-solid fa-check"></i></div>
+            <div class="tl-info">
+              <h4>Đặt hàng thành công</h4>
+              <p>08/03/2025 · 10:24</p>
+            </div>
+          </div>
+          <div class="tl-step">
+            <div class="tl-dot done"><i class="fa-solid fa-check"></i></div>
+            <div class="tl-info">
+              <h4>Xác nhận & đóng gói</h4>
+              <p>08/03/2025 · 14:00</p>
+            </div>
+          </div>
+          <div class="tl-step">
+            <div class="tl-dot current"><i class="fa-solid fa-truck"></i></div>
+            <div class="tl-info">
+              <h4>Đang giao hàng</h4>
+              <p>Dự kiến: 11/03/2025</p>
+            </div>
+          </div>
+          <div class="tl-step">
+            <div class="tl-dot pending"><i class="fa-solid fa-house"></i></div>
+            <div class="tl-info">
+              <h4>Đã nhận hàng</h4>
+              <p>Chờ xác nhận</p>
+            </div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">
+          <i class="fa-solid fa-xmark"></i> Đóng
+        </button>
+      </div>
+    </div>
+
+    <script
+      type="module"
+      src="{{ url_for('static', path='/js/profile.js') }}?v=1001"
+    ></script>
+  </body>
+</html>

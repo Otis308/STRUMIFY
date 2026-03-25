@@ -1,0 +1,633 @@
+{% extends "base.html" %} {% block custom_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', path='css/cart.css') }}?v=100"
+/>
+{% endblock %} {% block content %}
+<div class="cart-page" id="cartPage">
+  <!-- ══ STEP BAR ══════════════════════════════════════════════ -->
+  <div class="step-bar">
+    <div class="steps-container">
+      <div class="step-item active" id="stepItem1">
+        <div class="step-circle">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="step-check fa-solid fa-check"></span>
+        </div>
+        <span class="step-label">Giỏ hàng</span>
+      </div>
+
+      <div class="step-connector" id="conn1"></div>
+
+      <div class="step-item" id="stepItem2">
+        <div class="step-circle">
+          <i class="fa-solid fa-address-card"></i>
+          <span class="step-check fa-solid fa-check"></span>
+        </div>
+        <span class="step-label">Thông tin</span>
+      </div>
+
+      <div class="step-connector" id="conn2"></div>
+
+      <div class="step-item" id="stepItem3">
+        <div class="step-circle">
+          <i class="fa-solid fa-credit-card"></i>
+          <span class="step-check fa-solid fa-check"></span>
+        </div>
+        <span class="step-label">Thanh toán</span>
+      </div>
+
+      <div class="step-connector" id="conn3"></div>
+
+      <div class="step-item" id="stepItem4">
+        <div class="step-circle">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <span class="step-label">Xác nhận</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 1 – GIỎ HÀNG ════════════════════════════════ -->
+  <section class="cart-section active" id="section1">
+    <div class="section-inner cart-layout">
+      <!-- Danh sách sản phẩm -->
+      <div class="items-col">
+        <div class="col-header">
+          <h2 class="col-title">
+            <i class="fa-solid fa-cart-shopping"></i> Giỏ hàng của bạn
+          </h2>
+          <span class="badge-count" id="itemsCount">0 sản phẩm</span>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-cart hidden" id="emptyCart">
+          <div class="empty-icon">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+          <h3>Giỏ hàng đang trống</h3>
+          <p>
+            Bạn chưa thêm sản phẩm nào. Hãy khám phá bộ sưu tập nhạc cụ của
+            STRUMIFY!
+          </p>
+          <a href="{{ url_for('order_page') }}" class="btn-browse">
+            <i class="fa-solid fa-guitar"></i> Khám phá sản phẩm
+          </a>
+        </div>
+
+        <!-- Items list (rendered by JS) -->
+        <div id="cartItemsList"></div>
+
+        <!-- Clear all -->
+        <button
+          class="btn-clear-all hidden"
+          id="btnClearAll"
+          onclick="clearAll()"
+        >
+          <i class="fa-solid fa-trash"></i> Xóa tất cả
+        </button>
+      </div>
+
+      <!-- Tóm tắt đơn hàng -->
+      <aside class="summary-col">
+        <div class="summary-card">
+          <h3 class="summary-title">
+            <i class="fa-solid fa-receipt"></i> Tóm tắt đơn hàng
+          </h3>
+
+          <!-- Coupon -->
+          <div class="coupon-block">
+            <label class="coupon-label">
+              <i class="fa-solid fa-tag"></i> Mã giảm giá
+            </label>
+            <div class="coupon-row">
+              <input
+                type="text"
+                id="couponInput"
+                placeholder="Nhập mã giảm giá"
+                onkeydown="if (event.key === 'Enter') applyCoupon();"
+              />
+              <button class="btn-apply" onclick="applyCoupon()">Áp dụng</button>
+            </div>
+            <p class="coupon-msg" id="couponMsg"></p>
+          </div>
+
+          <!-- Price breakdown -->
+          <div class="price-breakdown">
+            <div class="price-row">
+              <span>Tạm tính</span>
+              <span id="sumSubtotal">0₫</span>
+            </div>
+            <div class="price-row green-row hidden" id="discountRow">
+              <span><i class="fa-solid fa-tag"></i> Giảm giá</span>
+              <span id="sumDiscount" class="c-green">−0₫</span>
+            </div>
+            <div class="price-row">
+              <span>Phí vận chuyển</span>
+              <span id="sumShipping" class="c-green">Miễn phí</span>
+            </div>
+            <div class="price-row total-row">
+              <span>Tổng cộng</span>
+              <span id="sumTotal" class="total-price">0₫</span>
+            </div>
+          </div>
+
+          <button
+            class="btn-primary"
+            id="btnToStep2"
+            onclick="goStep(2)"
+            disabled
+          >
+            <i class="fa-solid fa-arrow-right"></i> Tiến hành đặt hàng
+          </button>
+
+          <a href="{{ url_for('order_page') }}" class="btn-ghost-link">
+            <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+          </a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══ SECTION 2 – THÔNG TIN GIAO HÀNG ═════════════════════ -->
+  <section class="cart-section hidden" id="section2">
+    <div class="section-inner checkout-layout">
+      <!-- Form -->
+      <div class="form-col">
+        <div class="col-header">
+          <button class="btn-back" onclick="goStep(1)">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+          </button>
+          <h2 class="col-title">
+            <i class="fa-solid fa-location-dot"></i> Thông tin giao hàng
+          </h2>
+        </div>
+
+        <form class="delivery-form" id="deliveryForm" novalidate>
+          <div class="form-row2">
+            <!-- Họ tên -->
+            <div class="form-group">
+              <label>Họ và tên <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-user"></i>
+                <input
+                  type="text"
+                  id="fName"
+                  placeholder="Nguyễn Văn A"
+                  autocomplete="name"
+                />
+              </div>
+              <span class="f-err" id="errName"></span>
+            </div>
+            <!-- SĐT -->
+            <div class="form-group">
+              <label>Số điện thoại <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input
+                  type="tel"
+                  id="fPhone"
+                  placeholder="0901234567"
+                  maxlength="10"
+                  autocomplete="tel"
+                />
+              </div>
+              <span class="f-err" id="errPhone"></span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label>Email <span class="opt">(tuỳ chọn)</span></label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-envelope"></i>
+              <input
+                type="email"
+                id="fEmail"
+                placeholder="email@example.com"
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <!-- Địa chỉ: Số nhà + Tên đường -->
+          <div class="form-group">
+            <label>Số nhà, tên đường <span class="req">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-road"></i>
+              <input
+                type="text"
+                id="fStreet"
+                placeholder="123 Đường Lê Lợi"
+                autocomplete="address-line1"
+              />
+            </div>
+            <span class="f-err" id="errStreet"></span>
+          </div>
+
+          <div class="form-row2">
+            <!-- Phường/Xã -->
+            <div class="form-group">
+              <label>Phường/Xã <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-map-pin"></i>
+                <input type="text" id="fWard" placeholder="Phường Bến Nghé" />
+              </div>
+              <span class="f-err" id="errWard"></span>
+            </div>
+            <!-- Quận/Huyện -->
+            <div class="form-group">
+              <label>Quận/Huyện <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-map-pin"></i>
+                <input type="text" id="fDistrict" placeholder="Quận 1" />
+              </div>
+              <span class="f-err" id="errDistrict"></span>
+            </div>
+          </div>
+
+          <!-- Tỉnh/TP -->
+          <div class="form-group">
+            <label>Tỉnh/Thành phố <span class="req">*</span></label>
+            <div class="input-wrap select-wrap">
+              <i class="fa-solid fa-city"></i>
+              <select id="fCity">
+                <option value="">— Chọn tỉnh/thành phố —</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+            <span class="f-err" id="errCity"></span>
+          </div>
+
+          <!-- Ghi chú -->
+          <div class="form-group">
+            <label>Ghi chú đơn hàng <span class="opt">(tuỳ chọn)</span></label>
+            <div class="input-wrap textarea-wrap">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <textarea
+                id="fNote"
+                rows="3"
+                placeholder='Ví dụ: "Giao ngoài giờ hành chính", "Nhờ chỉnh action thấp"...'
+              ></textarea>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary" onclick="submitInfo()">
+            <i class="fa-solid fa-arrow-right"></i> Chọn phương thức thanh toán
+          </button>
+        </form>
+      </div>
+
+      <!-- Tóm tắt bên phải -->
+      <aside class="summary-col">
+        <div class="summary-card">
+          <h3 class="summary-title">
+            <i class="fa-solid fa-bag-shopping"></i> Đơn hàng của bạn
+          </h3>
+          <div class="order-review-list" id="reviewList"></div>
+          <div class="price-breakdown compact">
+            <div class="price-row">
+              <span>Tạm tính</span><span id="rvSubtotal">0₫</span>
+            </div>
+            <div class="price-row green-row hidden" id="rvDiscRow">
+              <span>Giảm giá</span
+              ><span id="rvDiscount" class="c-green">−0₫</span>
+            </div>
+            <div class="price-row">
+              <span>Phí vận chuyển</span><span class="c-green">Miễn phí</span>
+            </div>
+            <div class="price-row total-row">
+              <span>Tổng cộng</span
+              ><span id="rvTotal" class="total-price">0₫</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══ SECTION 3 – THANH TOÁN ═══════════════════════════════ -->
+  <section class="cart-section hidden" id="section3">
+    <div class="section-inner checkout-layout">
+      <!-- Payment options -->
+      <div class="form-col">
+        <div class="col-header">
+          <button class="btn-back" onclick="goStep(2)">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+          </button>
+          <h2 class="col-title">
+            <i class="fa-solid fa-credit-card"></i> Phương thức thanh toán
+          </h2>
+        </div>
+
+        <!-- COD -->
+        <div
+          class="pay-option-card"
+          id="payCardCod"
+          onclick="selectPayMethod('cod')"
+        >
+          <div class="pay-radio-wrap">
+            <div class="pay-radio" id="radioCod"></div>
+          </div>
+          <div class="pay-icon-wrap cod-icon">
+            <i class="fa-solid fa-money-bill-wave"></i>
+          </div>
+          <div class="pay-text">
+            <div class="pay-title">Thanh toán khi nhận hàng (COD)</div>
+            <div class="pay-desc">
+              Trả tiền mặt khi shipper giao hàng tận nhà
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank Transfer -->
+        <div
+          class="pay-option-card"
+          id="payCardBank"
+          onclick="selectPayMethod('bank')"
+        >
+          <div class="pay-radio-wrap">
+            <div class="pay-radio" id="radioBank"></div>
+          </div>
+          <div class="pay-icon-wrap bank-icon">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div class="pay-text">
+            <div class="pay-title">Chuyển khoản ngân hàng</div>
+            <div class="pay-desc">
+              Quét VietQR hoặc chuyển khoản thủ công, xử lý ngay sau khi xác
+              nhận
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank transfer details (ẩn/hiện) -->
+        <div class="bank-details-block hidden" id="bankDetailsBlock">
+          <div class="bank-details-header">
+            <i class="fa-solid fa-qrcode"></i> Thông tin chuyển khoản
+          </div>
+
+          <div class="bank-info-table">
+            <div class="bank-info-row">
+              <span class="bi-label">Ngân hàng</span>
+              <strong class="bi-value" id="bdBank">—</strong>
+            </div>
+            <div class="bank-info-row">
+              <span class="bi-label">Số tài khoản</span>
+              <div class="bi-copyable">
+                <strong class="bi-value" id="bdAccount">—</strong>
+                <button
+                  class="btn-copy"
+                  onclick="copyEl('bdAccount')"
+                  title="Sao chép"
+                >
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="bank-info-row">
+              <span class="bi-label">Chủ tài khoản</span>
+              <strong class="bi-value" id="bdOwner">—</strong>
+            </div>
+            <div class="bank-info-row">
+              <span class="bi-label">Số tiền</span>
+              <strong class="bi-value gold" id="bdAmount">—</strong>
+            </div>
+            <div class="bank-info-row full">
+              <span class="bi-label">Nội dung CK</span>
+              <div class="bi-copyable">
+                <strong class="bi-value gold" id="bdContent">—</strong>
+                <button
+                  class="btn-copy"
+                  onclick="copyEl('bdContent')"
+                  title="Sao chép"
+                >
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Code -->
+          <div class="qr-block">
+            <p class="qr-label">
+              <i class="fa-solid fa-qrcode"></i>
+              Quét mã QR để chuyển khoản ngay
+            </p>
+            <div class="qr-frame" id="qrFrame">
+              <div class="qr-loading" id="qrLoading">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Đang tạo QR...</span>
+              </div>
+              <img
+                id="qrImg"
+                src=""
+                alt="QR Chuyển khoản"
+                onload="onQrLoad()"
+                onerror="onQrError()"
+              />
+            </div>
+            <p class="qr-support">
+              Hỗ trợ tất cả ứng dụng ngân hàng tại Việt Nam
+            </p>
+          </div>
+
+          <div class="bank-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Vui lòng nhập <strong>đúng nội dung chuyển khoản</strong> để đơn
+            hàng được xử lý tự động. Sai nội dung sẽ bị delay 1–2 ngày làm việc.
+          </div>
+        </div>
+
+        <!-- Place order button -->
+        <button
+          class="btn-primary btn-place-order"
+          id="btnPlaceOrder"
+          onclick="placeOrder()"
+          disabled
+        >
+          <i class="fa-solid fa-paper-plane"></i> Đặt hàng ngay
+        </button>
+      </div>
+
+      <!-- Confirm summary -->
+      <aside class="summary-col">
+        <div class="summary-card">
+          <h3 class="summary-title">
+            <i class="fa-solid fa-list-check"></i> Xác nhận đơn hàng
+          </h3>
+
+          <div class="order-review-list" id="payReviewList"></div>
+
+          <!-- Delivery info review -->
+          <div class="delivery-review-box" id="deliveryReviewBox"></div>
+
+          <div class="price-breakdown compact">
+            <div class="price-row">
+              <span>Tạm tính</span><span id="pySubtotal">0₫</span>
+            </div>
+            <div class="price-row green-row hidden" id="pyDiscRow">
+              <span>Giảm giá</span
+              ><span id="pyDiscount" class="c-green">−0₫</span>
+            </div>
+            <div class="price-row">
+              <span>Phí vận chuyển</span><span class="c-green">Miễn phí</span>
+            </div>
+            <div class="price-row total-row">
+              <span>Tổng thanh toán</span>
+              <span id="pyTotal" class="total-price">0₫</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══ SECTION 4 – XÁC NHẬN & THEO DÕI ═══════════════════ -->
+  <section class="cart-section hidden" id="section4">
+    <div class="section-inner confirm-inner">
+      <!-- Success hero -->
+      <div class="success-hero">
+        <div class="success-anim">
+          <div class="success-ring"></div>
+          <span class="success-emoji">🎸</span>
+        </div>
+        <h2>Đặt hàng thành công!</h2>
+        <p>
+          Cảm ơn bạn đã tin tưởng STRUMIFY. Chúng tôi sẽ liên hệ xác nhận đơn
+          hàng sớm nhất.
+        </p>
+        <div class="order-id-tag" id="confirmOrderId">—</div>
+      </div>
+
+      <!-- Order tracking timeline -->
+      <div class="tracking-card">
+        <div class="tracking-header">
+          <i class="fa-solid fa-truck-fast"></i>
+          <h3>Theo dõi đơn hàng</h3>
+        </div>
+
+        <div class="timeline" id="timeline">
+          <div class="tl-item done" data-key="ordered">
+            <div class="tl-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Đặt hàng thành công</div>
+              <div class="tl-time" id="tlOrdered">—</div>
+            </div>
+          </div>
+
+          <div class="tl-item" data-key="confirmed">
+            <div class="tl-dot">
+              <i class="fa-solid fa-clipboard-check"></i>
+            </div>
+            <div class="tl-body">
+              <div class="tl-title">Xác nhận đơn hàng</div>
+              <div class="tl-time">Dự kiến trong 1–2 giờ</div>
+            </div>
+          </div>
+
+          <div class="tl-item" data-key="processing">
+            <div class="tl-dot"><i class="fa-solid fa-box-open"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Xuất kho & đóng gói</div>
+              <div class="tl-time">Dự kiến trong 24 giờ</div>
+            </div>
+          </div>
+
+          <div class="tl-item" data-key="shipping">
+            <div class="tl-dot"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Đang vận chuyển</div>
+              <div class="tl-time">Dự kiến 1–3 ngày làm việc</div>
+            </div>
+          </div>
+
+          <div class="tl-item" data-key="arrived">
+            <div class="tl-dot">
+              <i class="fa-solid fa-house-circle-check"></i>
+            </div>
+            <div class="tl-body">
+              <div class="tl-title">Đã đến nơi giao</div>
+              <div class="tl-time">Chờ bàn giao</div>
+            </div>
+          </div>
+
+          <div class="tl-item last" data-key="delivered">
+            <div class="tl-dot"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Đã nhận hàng</div>
+              <div class="tl-time">Hoàn tất</div>
+            </div>
+          </div>
+        </div>
+        <!-- /timeline -->
+      </div>
+
+      <!-- Sản phẩm đã đặt -->
+      <div class="confirm-items-card">
+        <h3><i class="fa-solid fa-bag-shopping"></i> Sản phẩm đã đặt</h3>
+        <div id="confirmItemsList"></div>
+        <div class="price-breakdown compact" id="confirmPrices"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="confirm-actions">
+        <a href="/" class="btn-home">
+          <i class="fa-solid fa-house"></i> Về trang chủ
+        </a>
+        <a href="/profile" class="btn-primary">
+          <i class="fa-solid fa-box-open"></i> Xem đơn hàng của tôi
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+<!-- /cart-page -->
+
+<!-- ══ MODAL: YÊU CẦU ĐĂNG NHẬP ════════════════════════════ -->
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal-box">
+    <div class="modal-icon lock-icon">
+      <i class="fa-solid fa-lock"></i>
+    </div>
+    <h3>Yêu cầu đăng nhập</h3>
+    <p>Bạn cần đăng nhập để tiến hành đặt hàng và thanh toán</p>
+    <div class="modal-actions">
+      <a href="/login?next=/cart" class="btn-primary">
+        <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập ngay
+      </a>
+      <button class="btn-ghost-btn" onclick="closeModal('loginModal')">
+        Để sau
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: XÁC NHẬN XÓA ═══════════════════════════════════ -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-icon trash-icon">
+      <i class="fa-solid fa-trash"></i>
+    </div>
+    <h3>Xóa sản phẩm?</h3>
+    <p>Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?</p>
+    <div class="modal-actions">
+      <button class="btn-danger-solid" id="confirmDeleteBtn">
+        <i class="fa-solid fa-trash"></i> Xóa
+      </button>
+      <button class="btn-ghost-btn" onclick="closeModal('deleteModal')">
+        Hủy
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════ -->
+<div class="page-toast" id="pageToast">
+  <i class="toast-icon" id="toastIcon"></i>
+  <span id="toastMsg"></span>
+</div>
+
+{% endblock %} {% block custom_js %}
+<script src="{{ url_for('static', path='js/products-data.js') }}"></script>
+<script src="{{ url_for('static', path='js/cart.js') }}?v=100"></script>
+{% endblock %}
