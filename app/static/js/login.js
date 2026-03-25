@@ -1,135 +1,381 @@
-/**
- * GuitarShop Login Logic
- * Cập nhật: 10/02/2026
- */
+/* =============================================
+   STRUMIFY – login.js  (FIXED)
+   - Dùng URL tương đối (không hardcode localhost)
+   - Lưu token vào localStorage (không mất khi đóng tab)
+   - Token được đọc nhất quán ở mọi nơi
+   ============================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Elements Selection
-    const loginForm = document.getElementById("loginForm");
-    const togglePassword = document.getElementById("togglePassword");
-    const passwordInput = document.getElementById("password");
-    const emailInput = document.getElementById("email");
-    const errorMessage = document.getElementById("errorMessage");
-    const successMessage = document.getElementById("successMessage");
-    const submitButton = loginForm.querySelector('button[type="submit"]');
+/* ── TAB SWITCH ────────────────────────────── */
+function switchTab(tab) {
+  ['login', 'register'].forEach(t => {
+    const cap = t.charAt(0).toUpperCase() + t.slice(1);
+    document.getElementById('panel' + cap)?.classList.toggle('active', t === tab);
+    document.getElementById('tab'   + cap)?.classList.toggle('active', t === tab);
+  });
+  clearMsg();
+}
 
-    // 2. Kiểm tra trạng thái đăng nhập khi load trang
-    checkExistingLogin();
+/* ── MESSAGES ──────────────────────────────── */
+function showMsg(text, type = 'error') {
+  const el = document.getElementById('globalMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'msg show ' + (type === 'success' ? 'success' : 'error');
+  if (type === 'error') setTimeout(clearMsg, 6000);
+}
+function clearMsg() {
+  const el = document.getElementById('globalMsg');
+  if (el) { el.className = 'msg'; el.textContent = ''; }
+}
 
-    // 3. Toggle Password Visibility
-    togglePassword.addEventListener("click", function () {
-        const isPassword = passwordInput.type === "password";
-        passwordInput.type = isPassword ? "text" : "password";
-        this.textContent = isPassword ? "🙈" : "👁️";
+/* ── TOGGLE PASSWORD ───────────────────────── */
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  const ico = btn.querySelector('i');
+  if (!inp || !ico) return;
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  ico.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+
+/* ── STRENGTH ──────────────────────────────── */
+function checkStrength(pw) {
+  const fill  = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+  if (!fill || !label) return;
+  let s = 0;
+  if (pw.length >= 6)          s++;
+  if (pw.length >= 10)         s++;
+  if (/[A-Z]/.test(pw))        s++;
+  if (/[0-9]/.test(pw))        s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  const lvls = [
+    { w: '0%',   c: 'transparent', t: '' },
+    { w: '25%',  c: '#c0392b',     t: 'Yếu' },
+    { w: '50%',  c: '#d68910',     t: 'Trung bình' },
+    { w: '75%',  c: '#8c6248',     t: 'Khá mạnh' },
+    { w: '100%', c: '#3d8b5e',     t: 'Mạnh' },
+  ];
+  const l = lvls[Math.min(s, 4)];
+  fill.style.width      = l.w;
+  fill.style.background = l.c;
+  label.textContent     = l.t;
+  label.style.color     = l.c;
+}
+
+/* ─────────────────────────────────────────────
+   TOKEN HELPERS
+   Dùng localStorage để token không mất khi reload
+───────────────────────────────────────────── */
+const Auth = {
+  save(data) {
+    if (data.access_token) localStorage.setItem('access_token', data.access_token);
+    if (data.user) {
+      const u = data.user;
+      localStorage.setItem('user_id',      u.id              || '');
+      localStorage.setItem('user_name',    u.username        || '');
+      localStorage.setItem('user_email',   u.email           || '');
+      localStorage.setItem('user_phone',   u.phone           || '');
+      localStorage.setItem('user_address', u.address         || '');
+      localStorage.setItem('user_role',    u.role            || 'customer');
+      localStorage.setItem('user_tier',    u.membership_tier || 'new');
+      localStorage.setItem('user_avatar',  u.avatar_url      || '');
+    }
+  },
+  clear() {
+    ['access_token','user_id','user_name','user_email',
+     'user_phone','user_address','user_role','user_tier','user_avatar']
+      .forEach(k => localStorage.removeItem(k));
+  },
+  token()   { return localStorage.getItem('access_token') || ''; },
+  role()    { return localStorage.getItem('user_role')    || ''; },
+  isAdmin() { return this.role() === 'admin'; },
+};
+
+/* ── ĐĂNG NHẬP ─────────────────────────────── */
+async function handleLogin(event) {
+  event.preventDefault();
+  const emailEl = document.getElementById('loginEmail');
+  const pwEl    = document.getElementById('loginPassword');
+  const btn     = event.submitter || document.querySelector('#panelLogin .btn-primary');
+
+  const email    = emailEl?.value.trim();
+  const password = pwEl?.value;
+  if (!email || !password) { showMsg('Vui lòng nhập email và mật khẩu.'); return; }
+
+  setBtn(btn, true, '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng nhập…');
+
+  try {
+    // ✅ URL tương đối — hoạt động ở cả localhost lẫn Vercel
+    const res  = await fetch('/auth/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, password }),
     });
+    const data = await res.json();
 
-    // 4. Form Submission
-    loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        resetMessages();
+    if (res.ok) {
+      Auth.save(data);   // ✅ Lưu vào localStorage nhất quán
+      showMsg('Đăng nhập thành công! Đang chuyển hướng…', 'success');
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        const rememberMe = document.getElementById("rememberMe").checked;
+      const next = new URLSearchParams(window.location.search).get('next');
+      const url  = Auth.isAdmin() ? '/admin' : (next || '/');
+      setTimeout(() => { window.location.href = url; }, 1000);
+    } else {
+      showMsg(data.detail || data.message || 'Sai tài khoản hoặc mật khẩu.');
+    }
+  } catch {
+    showMsg('Không thể kết nối đến máy chủ. Kiểm tra lại mạng!');
+  } finally {
+    setBtn(btn, false, '<i class="fa-solid fa-right-to-bracket"></i> Đăng nhập');
+  }
+}
 
-        // Validation logic
-        if (!validateForm(email, password)) return;
+/* ── ĐĂNG KÝ ───────────────────────────────── */
+async function handleRegister(event) {
+  event.preventDefault();
+  ['errName', 'errEmail', 'errPhone', 'errDob', 'errConfirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
 
-        // Bắt đầu quá trình đăng nhập
-        setLoading(true);
+  const fields = {
+    username: document.getElementById('regName')?.value.trim()    || '',
+    email:    document.getElementById('regEmail')?.value.trim()   || '',
+    phone:    document.getElementById('regPhone')?.value.trim()   || '',
+    dob:      document.getElementById('regDob')?.value            || '',
+    gender:   document.getElementById('regGender')?.value         || '',
+    address:  document.getElementById('regAddress')?.value.trim() || '',
+    password: document.getElementById('regPassword')?.value       || '',
+    confirm:  document.getElementById('regConfirm')?.value        || '',
+  };
 
-        try {
-            // Thay thế URL này bằng endpoint thực tế của FastAPI (ví dụ: /api/v1/login)
-            const response = await handleLoginRequest(email, password);
+  const btn = event.submitter || document.querySelector('#panelRegister .btn-primary');
 
-            if (response.success) {
-                saveUserData(response.user, rememberMe);
-                showStatus(successMessage, "Đăng nhập thành công! Đang chuyển hướng...");
-                
-                // Chuyển hướng sau 1.2s
-                setTimeout(() => {
-                    window.location.href = "/home";
-                }, 1200);
-            } else {
-                showStatus(errorMessage, response.message || "Email hoặc mật khẩu không chính xác!");
-                setLoading(false);
-            }
-        } catch (error) {
-            showStatus(errorMessage, "Lỗi kết nối máy chủ. Vui lòng thử lại sau!");
-            setLoading(false);
-            console.error("Login Error:", error);
-        }
+  // Validate phía client
+  if (fields.username.length < 2) {
+    document.getElementById('errName').textContent = 'Họ tên phải có ít nhất 2 ký tự.'; return;
+  }
+  if (!fields.dob) {
+    document.getElementById('errDob').textContent = 'Vui lòng chọn ngày sinh.'; return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
+    document.getElementById('errEmail').textContent = 'Email không đúng định dạng.'; return;
+  }
+  if (!/^(0|\+84)[3578][0-9]{8}$/.test(fields.phone)) {
+    document.getElementById('errPhone').textContent = 'SĐT không hợp lệ (VD: 0912345678).'; return;
+  }
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(fields.password)) {
+    showMsg('Mật khẩu cần ≥ 8 ký tự, có chữ hoa, thường, số và ký tự đặc biệt!'); return;
+  }
+  if (fields.password !== fields.confirm) {
+    document.getElementById('errConfirm').textContent = 'Mật khẩu xác nhận không khớp!'; return;
+  }
+
+  setBtn(btn, true, '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng ký…');
+
+  try {
+    // ✅ URL tương đối — KHÔNG dùng http://127.0.0.1:8000
+    const res = await fetch('/auth/register', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        username: fields.username,
+        email:    fields.email,
+        phone:    fields.phone,
+        dob:      fields.dob,
+        gender:   fields.gender,
+        address:  fields.address,
+        password: fields.password,
+        role:     'customer',   // Luôn là customer, không cho tự set admin
+      }),
     });
+    const data = await res.json();
 
-    // --- Helper Functions ---
-
-    async function handleLoginRequest(email, password) {
-        /**
-         * Ở đây bạn sẽ dùng fetch() để gọi đến Backend FastAPI của mình.
-         * Demo giả lập phản hồi từ server:
-         */
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // Logic test: Chấp nhận mọi pass >= 6 ký tự
-                if (password.length >= 6) {
-                    resolve({
-                        success: true,
-                        user: { email, token: "JWT_TOKEN_HERE", name: "User" }
-                    });
-                } else {
-                    resolve({ success: false, message: "Mật khẩu không hợp lệ!" });
-                }
-            }, 1000);
-        });
+    if (res.ok || res.status === 201) {
+      showMsg('Đăng ký thành công! Đang chuyển sang đăng nhập…', 'success');
+      setTimeout(() => {
+        switchTab('login');
+        const el = document.getElementById('loginEmail');
+        if (el) el.value = fields.email;
+      }, 1500);
+    } else {
+      showMsg(data.detail || data.message || 'Đăng ký thất bại.');
     }
+  } catch {
+    showMsg('Không thể kết nối đến máy chủ. Kiểm tra lại mạng!');
+  } finally {
+    setBtn(btn, false, '<i class="fa-solid fa-user-plus"></i> Tạo tài khoản');
+  }
+}
 
-    function validateForm(email, password) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^[0-9]{10,11}$/;
+/* ── QUÊN MẬT KHẨU ────────────────────────── */
+function showForgot() {
+  showForgotStep1();
+  document.getElementById('forgotOverlay').classList.add('open');
+}
+function hideForgot() {
+  document.getElementById('forgotOverlay').classList.remove('open');
+}
+function showForgotStep1() {
+  document.getElementById('forgotStep1').style.display = '';
+  document.getElementById('forgotStep2').style.display = 'none';
+  const el  = document.getElementById('forgotEmail'); if (el) el.value = '';
+  const err = document.getElementById('errForgot');   if (err) err.textContent = '';
+}
 
-        if (!email) return showStatus(errorMessage, "Vui lòng nhập email hoặc số điện thoại!");
-        if (!password) return showStatus(errorMessage, "Vui lòng nhập mật khẩu!");
-        if (password.length < 6) return showStatus(errorMessage, "Mật khẩu phải có ít nhất 6 ký tự!");
-        if (!emailRegex.test(email) && !phoneRegex.test(email)) {
-            return showStatus(errorMessage, "Định dạng email hoặc số điện thoại không hợp lệ!");
-        }
-        return true;
+async function sendResetEmail() {
+  const emailEl = document.getElementById('forgotEmail');
+  const errEl   = document.getElementById('errForgot');
+  const btn     = document.getElementById('btnSendReset');
+  const email   = emailEl?.value.trim() || '';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (errEl) errEl.textContent = 'Email không đúng định dạng.'; return;
+  }
+  if (errEl) errEl.textContent = '';
+
+  setBtn(btn, true, '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi…');
+  try {
+    const res  = await fetch('/auth/forgot-password', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('sentToEmail').textContent = email;
+      document.getElementById('forgotStep1').style.display = 'none';
+      document.getElementById('forgotStep2').style.display = '';
+    } else {
+      if (errEl) errEl.textContent = data.detail || 'Gửi email thất bại.';
     }
+  } catch {
+    if (errEl) errEl.textContent = 'Không thể kết nối máy chủ.';
+  } finally {
+    setBtn(btn, false, '<i class="fa-solid fa-paper-plane"></i> Gửi email đặt lại');
+  }
+}
 
-    function saveUserData(user, rememberMe) {
-        const storage = rememberMe ? localStorage : sessionStorage;
-        storage.setItem("guitarshop_user", JSON.stringify({
-            ...user,
-            loginAt: new Date().toISOString()
-        }));
-    }
+/* ── ĐẶT LẠI MẬT KHẨU ─────────────────────── */
+async function submitReset() {
+  const newPw = document.getElementById('newPassword')?.value        || '';
+  const cfm   = document.getElementById('newPasswordConfirm')?.value || '';
+  const errEl = document.getElementById('errReset');
+  const btn   = document.getElementById('btnSubmitReset');
 
-    function checkExistingLogin() {
-        const saved = localStorage.getItem("guitarshop_user") || sessionStorage.getItem("guitarshop_user");
-        if (saved) {
-            const userData = JSON.parse(saved);
-            emailInput.value = userData.email;
-            // Tùy chọn: Có thể tự động redirect nếu token còn hạn
-            console.log("Welcome back:", userData.email);
-        }
-    }
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(newPw)) {
+    if (errEl) errEl.textContent = 'Mật khẩu cần ≥8 ký tự, chữ hoa, thường, số, ký tự đặc biệt.'; return;
+  }
+  if (newPw !== cfm) { if (errEl) errEl.textContent = 'Mật khẩu xác nhận không khớp!'; return; }
+  if (errEl) errEl.textContent = '';
 
-    function setLoading(isLoading) {
-        submitButton.disabled = isLoading;
-        submitButton.innerHTML = isLoading 
-            ? '<span class="spinner"></span> Đang xác thực...' 
-            : "Đăng Nhập";
-    }
+  const token = new URLSearchParams(window.location.search).get('reset_token') || '';
+  setBtn(btn, true, '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu…');
 
-    function showStatus(element, message) {
-        element.textContent = message;
-        element.style.display = "block";
-        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        return false;
-    }
+  try {
+    const res  = await fetch('/auth/reset-password', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ token, new_password: newPw }),
+    });
+    const data = await res.json();
 
-    function resetMessages() {
-        errorMessage.style.display = "none";
-        successMessage.style.display = "none";
+    if (res.ok) {
+      document.getElementById('resetOverlay')?.classList.remove('open');
+      showMsg('Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', 'success');
+    } else {
+      if (errEl) errEl.textContent = data.detail || 'Đặt lại thất bại.';
     }
+  } catch {
+    if (errEl) errEl.textContent = 'Không thể kết nối máy chủ.';
+  } finally {
+    setBtn(btn, false, '<i class="fa-solid fa-floppy-disk"></i> Lưu mật khẩu mới');
+  }
+}
+
+/* ── HELPER ────────────────────────────────── */
+function setBtn(btn, disabled, html) {
+  if (!btn) return;
+  btn.disabled  = disabled;
+  btn.innerHTML = html;
+}
+
+/* ── FLOATING ICONS (giữ nguyên) ───────────── */
+const ICONS = [
+  { icon: 'fa-guitar',           color: '#b35d1e', size: 28 },
+  { icon: 'fa-guitar',           color: '#8c4a18', size: 22 },
+  { icon: 'fa-guitar',           color: '#c97840', size: 36 },
+  { icon: 'fa-drum',             color: '#a62626', size: 26 },
+  { icon: 'fa-drum',             color: '#c0392b', size: 20 },
+  { icon: 'fa-violin',           color: '#5d4037', size: 24 },
+  { icon: 'fa-microphone-lines', color: '#546e7a', size: 22 },
+  { icon: 'fa-music',            color: '#3d8b5e', size: 20 },
+  { icon: 'fa-music',            color: '#4caf82', size: 18 },
+  { icon: 'fa-sliders',          color: '#9c5e27', size: 20 },
+  { icon: 'fa-headphones',       color: '#5c6bc0', size: 22 },
+  { icon: 'fa-compact-disc',     color: '#8e5490', size: 20 },
+  { icon: 'fa-record-vinyl',     color: '#455a64', size: 26 },
+  { icon: 'fa-radio',            color: '#6a8f3a', size: 22 },
+];
+const POOL = 20;
+let instrCanvas;
+function rnd(a, b) { return Math.random() * (b - a) + a; }
+
+function spawnIcon() {
+  if (!instrCanvas) return;
+  const d = ICONS[Math.floor(Math.random() * ICONS.length)];
+  const s = document.createElement('span');
+  s.className = 'float-icon fa-solid ' + d.icon;
+  s.style.cssText = `left:${rnd(3, 94)}%;bottom:-80px;font-size:${d.size}px;color:${d.color};
+    --r0:${rnd(-25, 25)}deg;--r1:${rnd(-25, 25)}deg;--op:${rnd(.5, .8)};
+    animation-duration:${rnd(9, 18)}s;animation-delay:${rnd(0, 5)}s;`;
+  s.addEventListener('click', () => {
+    s.classList.add('burst');
+    spawnParticles(s, d.color);
+    setTimeout(() => s.classList.remove('burst'), 600);
+  });
+  s.addEventListener('animationend', () => s.remove());
+  instrCanvas.appendChild(s);
+}
+
+function spawnParticles(anchor, color) {
+  const rect = anchor.getBoundingClientRect();
+  const cx   = rect.left + rect.width / 2;
+  const cy   = rect.top  + rect.height / 2;
+  ['♩', '♪', '♫', '♬', '★'].forEach((n, i) => {
+    const p   = document.createElement('span');
+    const ang = (i / 5) * Math.PI * 2;
+    const dist = rnd(40, 90);
+    p.textContent = n;
+    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;color:${color};
+      font-size:${rnd(12, 20)}px;font-weight:900;pointer-events:none;z-index:9999;
+      opacity:1;transition:transform .55s cubic-bezier(.22,.9,.35,1),opacity .55s ease;
+      transform:translate(-50%,-50%);`;
+    document.body.appendChild(p);
+    requestAnimationFrame(() => {
+      p.style.transform = `translate(calc(-50% + ${Math.cos(ang) * dist}px),
+                            calc(-50% + ${Math.sin(ang) * dist}px))`;
+      p.style.opacity = '0';
+    });
+    setTimeout(() => p.remove(), 600);
+  });
+}
+
+/* ── INIT ──────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  instrCanvas = document.getElementById('instrument-canvas');
+  for (let i = 0; i < POOL; i++) spawnIcon();
+  setInterval(() => { if (instrCanvas?.children.length < POOL) spawnIcon(); }, 800);
+
+  // Nếu URL có reset_token → mở modal đặt lại mật khẩu
+  if (new URLSearchParams(window.location.search).get('reset_token')) {
+    document.getElementById('resetOverlay')?.classList.add('open');
+  }
+
+  // Đóng modal khi click overlay
+  document.getElementById('forgotOverlay')?.addEventListener('click', e => {
+    if (e.target.id === 'forgotOverlay') hideForgot();
+  });
 });

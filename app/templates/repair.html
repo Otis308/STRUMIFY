@@ -1,0 +1,1031 @@
+{% extends "base.html" %} {% block custom_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', path='css/repair.css') }}?v=100"
+/>
+{% endblock %} {% block content %}
+<div class="rp-root">
+  <!-- ══════════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════════ -->
+  <section class="rp-hero">
+    <div class="rp-hero__grain"></div>
+    <div class="rp-hero__content">
+      <span class="rp-hero__eyebrow">
+        <i class="fa-solid fa-screwdriver-wrench"></i> Dịch vụ bảo dưỡng & sửa
+        chữa
+      </span>
+      <h1 class="rp-hero__title">
+        Nghệ nhân <em>STRUMIFY</em><br />chạm tay vào từng nhạc cụ
+      </h1>
+      <p class="rp-hero__sub">
+        Từ cổ điển đến hiện đại — chúng tôi mang lại âm thanh hoàn hảo với bảo
+        hành.
+      </p>
+      <div class="rp-hero__cta">
+        <a href="#booking" class="rp-btn rp-btn--primary">
+          <i class="fa-solid fa-calendar-check"></i> Đặt lịch sửa chữa
+        </a>
+        <a href="#tracking" class="rp-btn rp-btn--ghost">
+          <i class="fa-solid fa-magnifying-glass"></i> Tra cứu đơn
+        </a>
+      </div>
+    </div>
+    <div class="rp-hero__stats">
+      <div class="rp-stat">
+        <span class="rp-stat__n">500+</span
+        ><span class="rp-stat__l">Nhạc cụ được bảo dưỡng</span>
+      </div>
+      <div class="rp-stat">
+        <span class="rp-stat__n">4</span
+        ><span class="rp-stat__l">Nghệ nhân</span>
+      </div>
+      <div class="rp-stat">
+        <span class="rp-stat__n">30</span
+        ><span class="rp-stat__l">Ngày bảo hành</span>
+      </div>
+      <div class="rp-stat">
+        <span class="rp-stat__n">5.0★</span
+        ><span class="rp-stat__l">Đánh giá</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       QUY TRÌNH 5 BƯỚC
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-workflow" id="workflow">
+    <div class="rp-section__inner">
+      <div class="rp-section__head">
+        <h2>Quy trình <span class="hl">5 bước</span> chuẩn xác</h2>
+        <p>Mỗi bước đều được ghi lại và thông báo đến bạn qua Email/SMS.</p>
+      </div>
+      <div class="wf-steps">
+        <div class="wf-step" data-step="1">
+          <div class="wf-step__icon"><i class="fa-solid fa-inbox"></i></div>
+          <div class="wf-step__body">
+            <strong>Tiếp nhận</strong>
+            <p>Đặt lịch online hoặc trực tiếp đến cửa hàng.</p>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step" data-step="2">
+          <div class="wf-step__icon">
+            <i class="fa-solid fa-stethoscope"></i>
+          </div>
+          <div class="wf-step__body">
+            <strong>Giám định</strong>
+            <p>
+              Kỹ thuật viên kiểm tra, tư vấn, báo giá chính xác & linh kiện cần
+              thay.
+            </p>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step" data-step="3">
+          <div class="wf-step__icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="wf-step__body">
+            <strong>Xác nhận</strong>
+            <p>
+              Hệ thống gửi thông báo giá. Bạn phê duyệt online hoặc xác nhận khi
+              đến trực tiếp.
+            </p>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step" data-step="4">
+          <div class="wf-step__icon"><i class="fa-solid fa-wrench"></i></div>
+          <div class="wf-step__body">
+            <strong>Thực hiện</strong>
+            <p>
+              Nghệ nhân cập nhật tiến độ & gửi ảnh chụp quá trình sửa để bạn yên
+              tâm.
+            </p>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step" data-step="5">
+          <div class="wf-step__icon"><i class="fa-solid fa-award"></i></div>
+          <div class="wf-step__body">
+            <strong>Bàn giao & Bảo hành</strong>
+            <p>Xuất hóa đơn, kích hoạt bảo hành. Nhạc cụ trở lại nguyên vẹn.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       DANH MỤC DỊCH VỤ
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-services" id="services">
+    <div class="rp-section__inner">
+      <div class="rp-section__head">
+        <h2>Danh mục <span class="hl">dịch vụ</span></h2>
+        <p>Phân loại theo nhạc cụ — chuyên sâu cho từng loại, không đại trà.</p>
+      </div>
+
+      <!-- Service tabs -->
+      <div class="svc-tabs">
+        <button class="svc-tab active" data-panel="guitar">
+          <i class="fa-solid fa-guitar"></i> Guitar
+        </button>
+        <button class="svc-tab" data-panel="piano">
+          <i class="fa-solid fa-music"></i> Piano
+        </button>
+        <button class="svc-tab" data-panel="violin">
+          <i class="fa-solid fa-music"></i> Violin
+        </button>
+        <button class="svc-tab" data-panel="other">
+          <i class="fa-solid fa-box-open"></i> Khác
+        </button>
+      </div>
+
+      <!-- Guitar -->
+      <div class="svc-panel active" id="panel-guitar">
+        <div class="svc-grid">
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #1db954">
+              <i class="fa-solid fa-sliders"></i>
+            </div>
+            <h4>Setup – Chỉnh Action</h4>
+            <p>
+              Căn chỉnh chiều cao dây, cong cần (truss rod), nut & saddle để đàn
+              dễ bấm và chuẩn intonation.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1–2 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #e8302a">
+              <i class="fa-solid fa-hammer"></i>
+            </div>
+            <h4>Thay Phím – Refret</h4>
+            <p>
+              Tháo toàn bộ phím cũ, vào phím mới, mài phẳng, đánh bóng
+              fretboard. Cải thiện tối đa cảm giác chơi.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 3–5 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #f5c518">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h4>Sửa EQ & Hàn Mạch</h4>
+            <p>
+              Kiểm tra, thay thế preamp, eq board, jack output, potentiometer.
+              Loại bỏ tiếng ù, rè điện.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1–3 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #7a5230">
+              <i class="fa-solid fa-paintbrush"></i>
+            </div>
+            <h4>Phục hồi & Đánh Bóng</h4>
+            <p>
+              Lấp đầy vết trầy, chống oxy hóa phần kim loại, đánh bóng body bằng
+              wax chuyên dụng.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 2–4 ngày</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Piano -->
+      <div class="svc-panel" id="panel-piano">
+        <div class="svc-grid">
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #1a6fa8">
+              <i class="fa-solid fa-music"></i>
+            </div>
+            <h4>Lên Dây – Tuning</h4>
+            <p>
+              Điều chỉnh từng dây piano về đúng chuẩn A440Hz bằng thiết bị kỹ
+              thuật số. Khuyến nghị định kỳ 6 tháng/lần.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 2–4 giờ</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #e8302a">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <h4>Phục hồi Búa Đàn</h4>
+            <p>
+              Reshaping, needling hoặc thay mới felt của búa để khôi phục âm sắc
+              mượt mà, loại bỏ tiếng cứng.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1–2 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #f5c518">
+              <i class="fa-solid fa-gears"></i>
+            </div>
+            <h4>Cân chỉnh Máy – Regulation</h4>
+            <p>
+              Điều chỉnh toàn bộ cơ cấu action (let-off, key dip, aftertouch)
+              đảm bảo phím đáp đồng đều từng phím.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 2–4 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #2e8b57">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h4>Vệ sinh Tổng Thể</h4>
+            <p>
+              Làm sạch bụi bẩn, phím ngà, dây đàn, bôi trơn các điểm ma sát bên
+              trong cơ cấu piano.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1 ngày</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Violin -->
+      <div class="svc-panel" id="panel-violin">
+        <div class="svc-grid">
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #c9922a">
+              <i class="fa-solid fa-bridge"></i>
+            </div>
+            <h4>Thay Cầu Đàn – Bridge</h4>
+            <p>
+              Cắt và lắp bridge mới bằng maple Pháp chất lượng cao, căn chỉnh độ
+              cao dây và tọa độ cầu.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1–2 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #e8302a">
+              <i class="fa-solid fa-circle-dot"></i>
+            </div>
+            <h4>Chỉnh Hồn Đàn – Soundpost</h4>
+            <p>
+              Dịch chuyển và điều chỉnh cột hồn bên trong body để tối ưu hóa sự
+              cộng hưởng âm thanh.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #1db954">
+              <i class="fa-solid fa-link"></i>
+            </div>
+            <h4>Thay Dây Toàn Bộ</h4>
+            <p>
+              Lắp dây mới (Dominant, Evah Pirazzi, Pirastro...), chỉnh fine
+              tuner, rosin. Sẵn sàng biểu diễn.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 30 phút</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #1a6fa8">
+              <i class="fa-solid fa-droplet"></i>
+            </div>
+            <h4>Phục hồi Varnish</h4>
+            <p>
+              Lấp vết trầy nhỏ, phục hồi lớp vecni gốc bảo vệ gỗ, giữ màu và giá
+              trị của đàn cổ.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 3–7 ngày</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Other -->
+      <div class="svc-panel" id="panel-other">
+        <div class="svc-grid">
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #c9922a">
+              <i class="fa-solid fa-drum"></i>
+            </div>
+            <h4>Drum – Căng Mặt Trống</h4>
+            <p>
+              Thay head mới, căn chỉnh tension đều 360° cho âm thanh chuẩn pitch
+              từng trống.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1–2 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #7a5230">
+              <i class="fa-solid fa-wind"></i>
+            </div>
+            <h4>Flute – Vệ sinh & Pad</h4>
+            <p>
+              Vệ sinh toàn bộ ống, thay pad chống rò khí, dầu mỡ key mechanism.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 2–3 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #1a6fa8">
+              <i class="fa-solid fa-guitar"></i>
+            </div>
+            <h4>Ukulele – Setup & Thay Dây</h4>
+            <p>
+              Chỉnh action, nut, saddle. Thay dây Aquila/Worth. Phù hợp mọi size
+              soprano đến baritone.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> 1 ngày</span
+            >
+          </div>
+          <div class="svc-card">
+            <div class="svc-card__icon" style="--ic: #2e8b57">
+              <i class="fa-solid fa-question-circle"></i>
+            </div>
+            <h4>Nhạc cụ khác?</h4>
+            <p>
+              Liên hệ trực tiếp để được tư vấn. Chúng tôi có thể xử lý hầu hết
+              các loại nhạc cụ dây và hơi.
+            </p>
+            <span class="svc-card__time"
+              ><i class="fa-regular fa-clock"></i> Liên hệ</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       BẢNG GIÁ
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-pricing" id="pricing">
+    <div class="rp-section__inner">
+      <div class="rp-section__head">
+        <h2>Bảng giá <span class="hl">công khai</span></h2>
+        <p>
+          Không phát sinh chi phí ẩn — mọi giá đều được xác nhận trước khi sửa.
+        </p>
+      </div>
+      <div class="price-grid">
+        <!-- Cơ bản -->
+        <div class="price-card">
+          <div class="price-card__head">
+            <span class="price-card__tier">Cơ Bản</span>
+            <p class="price-card__sub">Bảo dưỡng định kỳ, thay dây, vệ sinh</p>
+          </div>
+          <div class="price-card__body">
+            <div class="price-row-item">
+              <span>Setup Guitar (action + intonation)</span>
+              <span class="price-amt">250.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Thay dây Guitar</span>
+              <span class="price-amt">80.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Thay dây Violin</span>
+              <span class="price-amt">120.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Lên dây Piano (1 lần)</span>
+              <span class="price-amt">400.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Vệ sinh tổng thể</span>
+              <span class="price-amt">150.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Thay dây Ukulele</span>
+              <span class="price-amt">60.000₫</span>
+            </div>
+          </div>
+          <div class="price-card__foot">
+            <i class="fa-solid fa-shield-halved"></i> Bảo hành 15 ngày
+          </div>
+        </div>
+
+        <!-- Chuyên sâu (highlighted) -->
+        <div class="price-card price-card--featured">
+          <div class="price-card__badge">Phổ biến nhất</div>
+          <div class="price-card__head">
+            <span class="price-card__tier">Chuyên Sâu</span>
+            <p class="price-card__sub">
+              Sửa chữa kỹ thuật cao, phục hồi toàn bộ
+            </p>
+          </div>
+          <div class="price-card__body">
+            <div class="price-row-item">
+              <span>Refret toàn bộ (thay phím)</span>
+              <span class="price-amt">1.200.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Sửa EQ + hàn mạch</span>
+              <span class="price-amt">350.000₫+</span>
+            </div>
+            <div class="price-row-item">
+              <span>Thay bridge Violin</span>
+              <span class="price-amt">450.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Regulation Piano (toàn bộ)</span>
+              <span class="price-amt">2.500.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Phục hồi varnish Violin</span>
+              <span class="price-amt">800.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Phục hồi búa đàn Piano</span>
+              <span class="price-amt">1.800.000₫</span>
+            </div>
+          </div>
+          <div class="price-card__foot">
+            <i class="fa-solid fa-shield-halved"></i> Bảo hành
+            <strong>30 ngày</strong>
+          </div>
+        </div>
+
+        <!-- Linh kiện -->
+        <div class="price-card">
+          <div class="price-card__head">
+            <span class="price-card__tier">Linh Kiện</span>
+            <p class="price-card__sub">
+              Giá linh kiện thay thế (chưa gồm công)
+            </p>
+          </div>
+          <div class="price-card__body">
+            <div class="price-row-item">
+              <span>Dây Guitar Elixir set</span>
+              <span class="price-amt">220.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Phím guitar Jescar EVO</span>
+              <span class="price-amt">350.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Bridge Violin maple Pháp</span>
+              <span class="price-amt">280.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Dây Violin Dominant set</span>
+              <span class="price-amt">650.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Preamp EQ 3-band</span>
+              <span class="price-amt">450.000₫</span>
+            </div>
+            <div class="price-row-item">
+              <span>Jack output Switchcraft</span>
+              <span class="price-amt">85.000₫</span>
+            </div>
+          </div>
+          <div class="price-card__foot">
+            <i class="fa-solid fa-circle-info"></i> Giá cập nhật hàng tháng
+          </div>
+        </div>
+      </div>
+      <p class="price-note">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Giá trên chưa bao gồm linh kiện. Báo giá chính xác sau khi kỹ thuật viên
+        giám định. Bạn phải <strong>xác nhận online</strong> trước khi công việc
+        bắt đầu.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       FORM ĐẶT LỊCH
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-booking" id="booking">
+    <div class="rp-section__inner rp-section__inner--split">
+      <div class="booking-info">
+        <h2>Đặt lịch <span class="hl">sửa chữa</span></h2>
+        <p>
+          Mô tả tình trạng đàn và upload ảnh/video để kỹ thuật viên chuẩn bị
+          trước. Tiết kiệm thời gian giám định.
+        </p>
+        <ul class="booking-info__tips">
+          <li>
+            <i class="fa-solid fa-check-circle"></i> Phản hồi trong vòng
+            <strong>2 giờ</strong>làm việc
+          </li>
+          <li>
+            <i class="fa-solid fa-check-circle"></i> Báo giá, tư vấn
+            <strong>miễn phí</strong>
+          </li>
+          <li>
+            <i class="fa-solid fa-check-circle"></i> Dịch vụ đến
+            <strong>tận nơi</strong>hoặc nhận qua bưu điện
+          </li>
+          <li>
+            <i class="fa-solid fa-check-circle"></i> Cập nhật tiến độ
+            <strong>qua Email & SMS</strong>
+          </li>
+        </ul>
+
+        <!-- Giờ làm việc -->
+        <div class="booking-hours">
+          <div class="bh-row">
+            <i class="fa-regular fa-clock"></i><span>Thứ 2 – Thứ 6</span
+            ><strong>8:00 – 21:00</strong>
+          </div>
+          <div class="bh-row">
+            <i class="fa-regular fa-clock"></i><span>Thứ 7 – CN</span
+            ><strong>8:00 – 21:00</strong>
+          </div>
+          <div class="bh-row">
+            <i class="fa-solid fa-location-dot"></i><span>Địa chỉ</span
+            ><strong>4 chi nhánh hệ thống STRUMIFY</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="booking-form-wrap">
+        <form
+          class="booking-form"
+          id="bookingForm"
+          enctype="multipart/form-data"
+        >
+          <div class="bf-row bf-row--2">
+            <div class="bf-group">
+              <label class="bf-label">Họ và tên *</label>
+              <input
+                class="bf-input"
+                type="text"
+                name="customer_name"
+                placeholder="Nguyễn Văn A"
+                required
+              />
+            </div>
+            <div class="bf-group">
+              <label class="bf-label">Số điện thoại *</label>
+              <input
+                class="bf-input"
+                type="tel"
+                name="phone"
+                placeholder="09xxxxxxxx"
+                required
+              />
+            </div>
+          </div>
+          <div class="bf-row bf-row--2">
+            <div class="bf-group">
+              <label class="bf-label">Email</label>
+              <input
+                class="bf-input"
+                type="email"
+                name="email"
+                placeholder="email@example.com"
+              />
+            </div>
+            <div class="bf-group">
+              <label class="bf-label">Loại nhạc cụ *</label>
+              <select
+                class="bf-input"
+                name="instrument_type"
+                id="instrumentSelect"
+                required
+              >
+                <option value="">-- Chọn nhạc cụ --</option>
+                <option value="Guitar Acoustic">Guitar Acoustic</option>
+                <option value="Guitar Electric">Guitar Electric</option>
+                <option value="Guitar Bass">Guitar Bass</option>
+                <option value="Piano Acoustic">Piano Acoustic</option>
+                <option value="Piano Digital">Piano Digital</option>
+                <option value="Violin">Violin</option>
+                <option value="Viola">Viola</option>
+                <option value="Cello">Cello</option>
+                <option value="Drum">Drum / Trống</option>
+                <option value="Ukulele">Ukulele</option>
+                <option value="Flute">Flute</option>
+                <option value="Organ">Organ</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+          </div>
+          <div class="bf-row">
+            <div class="bf-group">
+              <label class="bf-label">Thương hiệu & Model đàn</label>
+              <input
+                class="bf-input"
+                type="text"
+                name="instrument_brand"
+                placeholder="VD: Yamaha F310, Casio PX-S1100…"
+              />
+            </div>
+          </div>
+          <div class="bf-row">
+            <div class="bf-group">
+              <label class="bf-label">Mô tả tình trạng lỗi *</label>
+              <textarea
+                class="bf-input bf-textarea"
+                name="issue_description"
+                rows="4"
+                placeholder="VD: Tiếng rè ở phím 5-7, dây G bị buzz khi đánh mạnh, jack output mất tiếng một bên…"
+                required
+              ></textarea>
+            </div>
+          </div>
+          <div class="bf-row">
+            <div class="bf-group">
+              <label class="bf-label"
+                >Upload ảnh / video lỗi
+                <span class="bf-label__hint"
+                  >(Tối đa 5 file, mỗi file ≤ 20MB)</span
+                >
+              </label>
+              <div class="bf-upload" id="uploadZone">
+                <input
+                  type="file"
+                  id="fileInput"
+                  name="media"
+                  multiple
+                  accept="image/*,video/*"
+                  style="display: none"
+                />
+                <div
+                  class="bf-upload__inner"
+                  onclick="document.getElementById('fileInput').click()"
+                >
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span>Kéo thả hoặc <u>bấm để chọn</u> ảnh/video</span>
+                  <small>JPG, PNG, MP4, MOV — tối đa 20MB/file</small>
+                </div>
+                <div class="bf-upload__preview" id="filePreview"></div>
+              </div>
+            </div>
+          </div>
+          <div class="bf-row bf-row--2">
+            <div class="bf-group">
+              <label class="bf-label">Ngày mang đàn đến</label>
+              <input
+                class="bf-input"
+                type="date"
+                name="preferred_date"
+                id="preferredDate"
+              />
+            </div>
+            <div class="bf-group">
+              <label class="bf-label">Khung giờ ưu tiên</label>
+              <select class="bf-input" name="preferred_time">
+                <option value="morning">Sáng (08:00 – 12:00)</option>
+                <option value="afternoon">Chiều (16:00 – 20:00)</option>
+                <option value="flexible">Linh hoạt</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="bf-submit" id="bookingSubmitBtn">
+            <i class="fa-solid fa-paper-plane"></i> Gửi yêu cầu đặt lịch
+          </button>
+          <p class="bf-note">
+            <i class="fa-solid fa-lock"></i> Thông tin của bạn được bảo mật
+            tuyệt đối. Không chia sẻ bên thứ 3.
+          </p>
+        </form>
+
+        <!-- Success state -->
+        <div class="booking-success hidden" id="bookingSuccess">
+          <div class="bs-icon">🎸</div>
+          <h3>Đặt lịch thành công!</h3>
+          <p>Chúng tôi đã nhận được yêu cầu của bạn.</p>
+          <div class="bs-code" id="bookingCode"></div>
+          <p class="bs-hint">
+            Lưu mã này để tra cứu trạng thái đơn hàng bên dưới.
+          </p>
+          <button class="rp-btn rp-btn--primary" onclick="resetBookingForm()">
+            <i class="fa-solid fa-plus"></i> Đặt lịch mới
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       TRA CỨU TRẠNG THÁI
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-tracking" id="tracking">
+    <div class="rp-section__inner rp-section__inner--narrow">
+      <div class="rp-section__head">
+        <h2>Tra cứu <span class="hl">trạng thái đơn</span></h2>
+        <p>Nhập mã đơn sửa chữa để xem tiến độ xử lý theo thời gian thực.</p>
+      </div>
+
+      <div class="track-box">
+        <div class="track-input-row">
+          <input
+            class="track-input"
+            type="text"
+            id="trackCodeInput"
+            placeholder="Nhập mã đơn  VD: SVC-240001"
+          />
+          <button class="track-btn" id="trackBtn" onclick="trackOrder()">
+            <i class="fa-solid fa-magnifying-glass"></i> Tra cứu
+          </button>
+        </div>
+
+        <!-- Kết quả tra cứu -->
+        <div class="track-result hidden" id="trackResult">
+          <div class="track-order-info">
+            <div class="toi-row">
+              <span>Mã đơn</span><strong id="trOrderId"></strong>
+            </div>
+            <div class="toi-row">
+              <span>Nhạc cụ</span><strong id="trInstrument"></strong>
+            </div>
+            <div class="toi-row">
+              <span>Kỹ thuật viên</span><strong id="trTechnician"></strong>
+            </div>
+            <div class="toi-row">
+              <span>Dự kiến hoàn thành</span><strong id="trETA"></strong>
+            </div>
+          </div>
+
+          <!-- Workflow progress -->
+          <div class="track-progress">
+            <div class="tp-step" data-status="pending">
+              <div class="tp-dot"><i class="fa-solid fa-inbox"></i></div>
+              <span>Tiếp nhận</span>
+            </div>
+            <div class="tp-line"></div>
+            <div class="tp-step" data-status="diagnosing">
+              <div class="tp-dot"><i class="fa-solid fa-stethoscope"></i></div>
+              <span>Giám định</span>
+            </div>
+            <div class="tp-line"></div>
+            <div class="tp-step" data-status="waiting_approval">
+              <div class="tp-dot"><i class="fa-solid fa-circle-pause"></i></div>
+              <span>Chờ duyệt</span>
+            </div>
+            <div class="tp-line"></div>
+            <div class="tp-step" data-status="repairing">
+              <div class="tp-dot"><i class="fa-solid fa-wrench"></i></div>
+              <span>Đang sửa</span>
+            </div>
+            <div class="tp-line"></div>
+            <div class="tp-step" data-status="testing">
+              <div class="tp-dot"><i class="fa-solid fa-headphones"></i></div>
+              <span>Kiểm âm</span>
+            </div>
+            <div class="tp-line"></div>
+            <div class="tp-step" data-status="completed">
+              <div class="tp-dot"><i class="fa-solid fa-award"></i></div>
+              <span>Hoàn thành</span>
+            </div>
+          </div>
+
+          <!-- Log lịch sử -->
+          <div class="track-logs">
+            <h4><i class="fa-solid fa-timeline"></i> Lịch sử cập nhật</h4>
+            <div class="tl-list" id="trackLogs"></div>
+          </div>
+        </div>
+
+        <div class="track-empty hidden" id="trackEmpty">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <p>Không tìm thấy đơn hàng với mã này. Vui lòng kiểm tra lại.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       ĐỘI NGŨ NGHỆ NHÂN
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-team" id="team">
+    <div class="rp-section__inner">
+      <div class="rp-section__head">
+        <h2>Đội ngũ <span class="hl">nghệ nhân Luthier</span></h2>
+        <p>
+          Những người trực tiếp chạm tay vào nhạc cụ của bạn — không outsource,
+          không đại trà.
+        </p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div
+            class="team-card__avatar"
+            style="background: linear-gradient(135deg, #5c3d22, #a87650)"
+          >
+            <span>MT</span>
+          </div>
+          <h4>Nguyễn Minh Tuấn</h4>
+          <p class="team-card__role">Guitar Luthier · 8 năm kinh nghiệm</p>
+          <p class="team-card__bio">
+            Chuyên gia sữa chữa & bảo dưỡng Guitar - Piano - Violin.
+          </p>
+          <div class="team-card__tags">
+            <span>Guitar</span><span>Refret</span><span>Acoustic</span>
+          </div>
+        </div>
+        <div class="team-card">
+          <div
+            class="team-card__avatar"
+            style="background: linear-gradient(135deg, #1a6fa8, #0f9640)"
+          >
+            <span>TH</span>
+          </div>
+          <h4>Lê Thanh Hương</h4>
+          <p class="team-card__role">Piano Technician · 4 năm kinh nghiệm</p>
+          <p class="team-card__bio">
+            Chứng chỉ RPT (Registered Piano Technician) của PTG Hoa Kỳ. Chuyên
+            tuning và regulation Piano cơ.
+          </p>
+          <div class="team-card__tags">
+            <span>Piano</span><span>Tuning</span><span>Regulation</span>
+          </div>
+        </div>
+        <div class="team-card">
+          <div
+            class="team-card__avatar"
+            style="background: linear-gradient(135deg, #c9922a, #e8302a)"
+          >
+            <span>PD</span>
+          </div>
+          <h4>Trần Phương Dung</h4>
+          <p class="team-card__role">String Specialist · 6 năm kinh nghiệm</p>
+          <p class="team-card__bio">
+            Tốt nghiệp Nhạc Viện TP.HCM, chuyên sâu về đàn dây cung (Violin,
+            Viola, Cello). Thành thạo soundpost & bridge fitting.
+          </p>
+          <div class="team-card__tags">
+            <span>Violin</span><span>Cello</span><span>Soundpost</span>
+          </div>
+        </div>
+        <div class="team-card">
+          <div
+            class="team-card__avatar"
+            style="background: linear-gradient(135deg, #2e8b57, #1a6fa8)"
+          >
+            <span>KN</span>
+          </div>
+          <h4>Võ Khắc Nam</h4>
+          <p class="team-card__role">
+            Electronics Technician · 6 năm kinh nghiệm
+          </p>
+          <p class="team-card__bio">
+            Kỹ sư điện tử, chuyên xử lý các vấn đề mạch EQ, preamp, pickup cho
+            Guitar điện và đàn phím điện tử.
+          </p>
+          <div class="team-card__tags">
+            <span>Electronics</span><span>EQ</span><span>Pickup</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       CẨM NANG BẢO QUẢN
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-guide" id="guide">
+    <div class="rp-section__inner">
+      <div class="rp-section__head">
+        <h2>Cẩm nang <span class="hl">bảo quản</span></h2>
+        <p>
+          Kiến thức chuyên sâu từ nghệ nhân — giúp nhạc cụ của bạn trường thọ
+          hơn.
+        </p>
+      </div>
+      <div class="guide-grid">
+        <article class="guide-card">
+          <div class="guide-card__icon" style="--gc: #1a6fa8">
+            <i class="fa-solid fa-droplet"></i>
+          </div>
+          <h4>Kiểm soát độ ẩm (Humidification)</h4>
+          <p>
+            Gỗ đàn cần độ ẩm 45–55% RH. Dưới ngưỡng này gỗ co lại gây nứt top,
+            trên ngưỡng gây phồng và tách keo. Dùng Dampit hoặc humidifier case.
+          </p>
+          <a href="#" class="guide-card__link"
+            >Đọc thêm <i class="fa-solid fa-arrow-right"></i
+          ></a>
+        </article>
+        <article class="guide-card">
+          <div class="guide-card__icon" style="--gc: #2e8b57">
+            <i class="fa-solid fa-soap"></i>
+          </div>
+          <h4>Vệ sinh mặt gỗ đúng cách</h4>
+          <p>
+            Không dùng cồn hay hóa chất tẩy rửa trực tiếp lên lacquer. Dùng
+            polish đàn chuyên dụng (Music Nomad, Dunlop 65) và vải microfiber.
+          </p>
+          <a href="#" class="guide-card__link"
+            >Đọc thêm <i class="fa-solid fa-arrow-right"></i
+          ></a>
+        </article>
+        <article class="guide-card">
+          <div class="guide-card__icon" style="--gc: #c9922a">
+            <i class="fa-solid fa-link"></i>
+          </div>
+          <h4>Bảo vệ & thay dây đúng lúc</h4>
+          <p>
+            Lau dây sau mỗi buổi chơi bằng vải khô để giảm oxy hóa. Guitar
+            acoustic nên thay dây 3–4 tháng/lần, điện 2–3 tháng để âm thanh
+            không bị "dead".
+          </p>
+          <a href="#" class="guide-card__link"
+            >Đọc thêm <i class="fa-solid fa-arrow-right"></i
+          ></a>
+        </article>
+        <article class="guide-card">
+          <div class="guide-card__icon" style="--gc: #e8302a">
+            <i class="fa-solid fa-temperature-half"></i>
+          </div>
+          <h4>Nhiệt độ & bảo quản</h4>
+          <p>
+            Không để đàn trong xe hơi dưới nắng hoặc nơi điều hòa thổi trực
+            tiếp. Nhiệt độ lý tưởng 18–25°C. Luôn cất đàn trong hộp khi không
+            dùng.
+          </p>
+          <a href="#" class="guide-card__link"
+            >Đọc thêm <i class="fa-solid fa-arrow-right"></i
+          ></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       CHÍNH SÁCH BẢO HÀNH
+  ══════════════════════════════════════════════ -->
+  <section class="rp-section rp-warranty" id="warranty">
+    <div class="rp-section__inner rp-section__inner--narrow">
+      <div class="rp-section__head">
+        <h2>Chính sách <span class="hl">bảo hành</span></h2>
+      </div>
+      <div class="warranty-grid">
+        <div class="warranty-card">
+          <i
+            class="fa-solid fa-screwdriver-wrench"
+            style="color: var(--rp-gold)"
+          ></i>
+          <h4>Bảo hành - sửa chữa</h4>
+          <p>
+            Toàn bộ công sửa chữa được bảo hành <strong>30 ngày</strong> kể từ
+            ngày bàn giao. Nếu lỗi tái phát do công sửa, chúng tôi xử lý miễn
+            phí.
+          </p>
+        </div>
+        <div class="warranty-card">
+          <i class="fa-solid fa-box" style="color: var(--rp-green)"></i>
+          <h4>Bảo hành linh kiện</h4>
+          <p>
+            Linh kiện thay thế chính hãng được bảo hành theo
+            <strong>chính sách nhà sản xuất</strong> (thường 6–12 tháng). Hóa
+            đơn linh kiện được xuất kèm đơn sửa.
+          </p>
+        </div>
+        <div class="warranty-card">
+          <i class="fa-solid fa-xmark-circle" style="color: var(--rp-red)"></i>
+          <h4>Không áp dụng bảo hành khi</h4>
+          <p>
+            Nhạc cụ bị va đập, ngâm nước sau khi nhận bàn giao. Can thiệp sửa
+            chữa bởi bên thứ 3 trong thời gian bảo hành. Hư hỏng do sử dụng sai
+            cách.
+          </p>
+        </div>
+        <div class="warranty-card">
+          <i class="fa-solid fa-phone" style="color: var(--rp-blue)"></i>
+          <h4>Kích hoạt bảo hành</h4>
+          <p>
+            Bảo hành tự động kích hoạt khi đơn hàng chuyển sang trạng thái
+            <strong>"Hoàn thành"</strong>. Mang hóa đơn + mã đơn sửa để được hỗ
+            trợ.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Toast -->
+<div class="rp-toast hidden" id="rpToast">
+  <span id="rpToastIcon"></span>
+  <span id="rpToastText"></span>
+</div>
+
+{% endblock %} {% block custom_js %}
+<script src="{{ url_for('static', path='js/repair.js') }}?v=100"></script>
+{% endblock %}

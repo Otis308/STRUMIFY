@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STRUMIFY – Tài khoản</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/login.css') }}"
+    />
+  </head>
+  <body>
+    <div class="bg">
+      <div class="bg-gradient"></div>
+      <div class="bg-dots"></div>
+    </div>
+    <div id="instrument-canvas"></div>
+
+    <!-- ══ LOGIN BOX ════════════════════════════════════════ -->
+    <div class="login-box" id="mainBox">
+      <div class="brand-header"><h1>STRUMIFY</h1></div>
+      <div id="globalMsg" class="msg"></div>
+
+      <div class="auth-tabs">
+        <button id="tabLogin" class="tab active" onclick="switchTab('login')">
+          Đăng nhập
+        </button>
+        <button id="tabRegister" class="tab" onclick="switchTab('register')">
+          Đăng ký
+        </button>
+      </div>
+
+      <!-- ══ ĐĂNG NHẬP ════════════════════════ -->
+      <div class="panel active" id="panelLogin">
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Email</label>
+            <div class="input-wrap">
+              <span class="input-icon"
+                ><i class="fa-solid fa-envelope"></i
+              ></span>
+              <input
+                type="email"
+                id="loginEmail"
+                placeholder="example@email.com"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Mật khẩu</label>
+            <div class="input-wrap">
+              <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+              <input
+                type="password"
+                id="loginPassword"
+                placeholder="Nhập mật khẩu"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-pw"
+                onclick="togglePw('loginPassword', this)"
+              >
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-options">
+            <label class="remember-me"
+              ><input type="checkbox" /> Ghi nhớ đăng nhập</label
+            >
+            <a
+              href="#"
+              class="forgot-link"
+              onclick="
+                showForgot();
+                return false;
+              "
+              >Quên mật khẩu?</a
+            >
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+          </button>
+        </form>
+        <div class="divider"><span>Hoặc tiếp tục với</span></div>
+        <div class="social-btns">
+          <button class="btn-social google">
+            <svg width="18" height="18" viewBox="0 0 48 48">
+              <path
+                fill="#EA4335"
+                d="M24 9.5c3.1 0 5.9 1.1 8.1 2.9l6-6C34.5 3.1 29.6 1 24 1 14.8 1 6.9 6.5 3.4 14.4l7 5.4C12.2 13.6 17.6 9.5 24 9.5z"
+              />
+              <path
+                fill="#4285F4"
+                d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.6h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7c4.3-4 6.8-9.9 6.8-17z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M10.4 28.3A14.5 14.5 0 0 1 9.5 24c0-1.5.2-3 .6-4.3l-7-5.4A23.7 23.7 0 0 0 .5 24c0 3.8.9 7.4 2.6 10.6l7.3-6.3z"
+              />
+              <path
+                fill="#34A853"
+                d="M24 46.5c5.5 0 10.1-1.8 13.5-4.9l-7.4-5.7a14.4 14.4 0 0 1-6.1 1.6c-6.3 0-11.6-4.1-13.5-9.8l-7.3 6.3C6.9 41.5 14.8 46.5 24 46.5z"
+              />
+            </svg>
+            Google
+          </button>
+          <button class="btn-social facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+              <path
+                d="M24 12a12 12 0 1 0-13.875 11.855V15.47H7.078V12h3.047v-2.635c0-3.008 1.792-4.669 4.533-4.669 1.312 0 2.686.234 2.686.234v2.953H15.83c-1.491 0-1.956.926-1.956 1.875V12h3.328l-.532 3.469h-2.796v8.385A12.003 12.003 0 0 0 24 12z"
+              />
+            </svg>
+            Facebook
+          </button>
+        </div>
+        <div class="back-home"><a href="/">← Quay về trang chủ</a></div>
+      </div>
+
+      <!-- ══ ĐĂNG KÝ ══════════════════════════ -->
+      <div class="panel" id="panelRegister">
+        <form id="registerForm" onsubmit="handleRegister(event)">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Họ và tên <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                <input
+                  type="text"
+                  id="regName"
+                  placeholder="Nguyễn Văn A"
+                  required
+                />
+              </div>
+              <span class="error-text" id="errName"></span>
+            </div>
+            <div class="form-group">
+              <label>Ngày sinh <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon"
+                  ><i class="fa-solid fa-cake-candles"></i
+                ></span>
+                <input type="date" id="regDob" required />
+              </div>
+              <span class="error-text" id="errDob"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Email <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon"
+                ><i class="fa-solid fa-envelope"></i
+              ></span>
+              <input
+                type="email"
+                id="regEmail"
+                placeholder="example@email.com"
+                required
+              />
+            </div>
+            <span class="error-text" id="errEmail"></span>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Số điện thoại <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon"
+                  ><i class="fa-solid fa-mobile-screen"></i
+                ></span>
+                <input
+                  type="tel"
+                  id="regPhone"
+                  placeholder="0901234567"
+                  required
+                />
+              </div>
+              <span class="error-text" id="errPhone"></span>
+            </div>
+            <div class="form-group">
+              <label>Giới tính</label>
+              <div class="input-wrap">
+                <span class="input-icon"
+                  ><i class="fa-solid fa-venus-mars"></i
+                ></span>
+                <select id="regGender" class="sel">
+                  <option value="">Chọn giới tính</option>
+                  <option value="male">Nam</option>
+                  <option value="female">Nữ</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Địa chỉ nhà</label>
+            <div class="input-wrap">
+              <span class="input-icon"
+                ><i class="fa-solid fa-location-dot"></i
+              ></span>
+              <input
+                type="text"
+                id="regAddress"
+                placeholder="Số nhà, đường, quận, thành phố"
+              />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Mật khẩu <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                <input
+                  type="password"
+                  id="regPassword"
+                  placeholder="Tối thiểu 8 ký tự"
+                  oninput="checkStrength(this.value)"
+                  required
+                />
+                <button
+                  type="button"
+                  class="toggle-pw"
+                  onclick="togglePw('regPassword', this)"
+                >
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+              <div class="strength-bar-wrap"><div id="strengthFill"></div></div>
+              <div class="strength-label" id="strengthLabel"></div>
+            </div>
+            <div class="form-group">
+              <label>Xác nhận mật khẩu <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                <input
+                  type="password"
+                  id="regConfirm"
+                  placeholder="Nhập lại mật khẩu"
+                  required
+                />
+                <button
+                  type="button"
+                  class="toggle-pw"
+                  onclick="togglePw('regConfirm', this)"
+                >
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+              <span class="error-text" id="errConfirm"></span>
+            </div>
+          </div>
+
+          <div class="terms">
+            <input type="checkbox" id="agreeTerms" required />
+            <label for="agreeTerms"
+              >Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a> và
+              <a href="#">Chính sách bảo mật</a></label
+            >
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fa-solid fa-user-plus"></i> Tạo tài khoản
+          </button>
+        </form>
+        <div class="back-home"><a href="/">← Quay về trang chủ</a></div>
+      </div>
+    </div>
+
+    <!-- ══ MODAL QUÊN MẬT KHẨU ══════════════════════ -->
+    <div class="modal-overlay" id="forgotOverlay">
+      <div class="modal-box" id="forgotBox">
+        <!-- BƯỚC 1: Nhập email -->
+        <div id="forgotStep1">
+          <div class="modal-icon"><i class="fa-solid fa-key"></i></div>
+          <h3>Quên mật khẩu?</h3>
+          <p class="modal-sub">
+            Nhập email đăng ký — chúng tôi sẽ gửi link đặt lại mật khẩu.
+          </p>
+          <div class="form-group" style="margin-top: 18px">
+            <div class="input-wrap">
+              <span class="input-icon"
+                ><i class="fa-solid fa-envelope"></i
+              ></span>
+              <input
+                type="email"
+                id="forgotEmail"
+                placeholder="example@email.com"
+              />
+            </div>
+            <span class="error-text" id="errForgot"></span>
+          </div>
+          <button
+            class="btn-primary"
+            onclick="sendResetEmail()"
+            id="btnSendReset"
+          >
+            <i class="fa-solid fa-paper-plane"></i> Gửi email đặt lại
+          </button>
+          <button class="btn-ghost-full" onclick="hideForgot()">Huỷ</button>
+        </div>
+
+        <!-- BƯỚC 2: Xác nhận đã gửi -->
+        <div id="forgotStep2" style="display: none">
+          <div class="modal-icon success">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>Email đã được gửi!</h3>
+          <p class="modal-sub">
+            Kiểm tra hộp thư <strong id="sentToEmail"></strong> và nhấn link đặt
+            lại mật khẩu trong vòng <strong>15 phút</strong>.
+          </p>
+          <p
+            class="modal-sub"
+            style="margin-top: 8px; font-size: 12px; color: #a08060"
+          >
+            Không thấy email? Kiểm tra thư mục spam.
+          </p>
+          <button
+            class="btn-primary"
+            onclick="hideForgot()"
+            style="margin-top: 18px"
+          >
+            Đã hiểu
+          </button>
+          <button class="btn-ghost-full" onclick="showForgotStep1()">
+            Gửi lại
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODAL ĐẶT LẠI MK (khi vào từ link email) ═══ -->
+    <div class="modal-overlay" id="resetOverlay">
+      <div class="modal-box">
+        <div class="modal-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Đặt mật khẩu mới</h3>
+        <p class="modal-sub">Mật khẩu mới phải khác mật khẩu cũ.</p>
+        <div class="form-group" style="margin-top: 18px">
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+            <input
+              type="password"
+              id="newPassword"
+              placeholder="Mật khẩu mới (≥8 ký tự)"
+            />
+            <button
+              type="button"
+              class="toggle-pw"
+              onclick="togglePw('newPassword', this)"
+            >
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+            <input
+              type="password"
+              id="newPasswordConfirm"
+              placeholder="Xác nhận mật khẩu mới"
+            />
+          </div>
+          <span class="error-text" id="errReset"></span>
+        </div>
+        <button class="btn-primary" onclick="submitReset()" id="btnSubmitReset">
+          <i class="fa-solid fa-floppy-disk"></i> Lưu mật khẩu mới
+        </button>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/login.js') }}"></script>
+  </body>
+</html>

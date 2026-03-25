@@ -1,211 +1,720 @@
-<!doctype html>
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GuitarShop - Cửa hàng Guitar hàng đầu Việt Nam</title>
-    <link rel="stylesheet" type="text/css" href="static/css/home.css" />
-    <script src=".\static\js\home.js"></script>
-  </head>
-  <body>
-    <!-- Header -->
-    <header>
-      <nav>
-        <div class="logo">🎸 GuitarShop</div>
-        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-        <ul class="nav-links" id="navLinks">
-          <li><a href="#home">Trang chủ</a></li>
-          <li><a href="#products">Sản phẩm</a></li>
-          <li><a href="#about">Giới thiệu</a></li>
-          <li><a href="#contact">Liên hệ</a></li>
-        </ul>
-        <div class="auth-buttons">
-          <a href="/login" class="btn btn-login">Đăng nhập</a>
-          <a href="/register" class="btn btn-register">Đăng ký</a>
+{% extends "base.html" %} {% block custom_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', path='css/home.css') }}?v=1005"
+/>
+{% endblock %} {% block content %}
+
+<!-- ══════════════════════════════════════════════════════════════
+     1. HERO
+     ══════════════════════════════════════════════════════════════ -->
+<section class="hero" id="home">
+  <video class="hero-video" autoplay loop muted playsinline preload="auto">
+    <source
+      src="{{ url_for('static', path='icons/play_guitar.mp4') }}"
+      type="video/mp4"
+    />
+  </video>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <i class="fa-solid fa-star"></i>
+      Nhạc cụ thủ công cao cấp tại Việt Nam
+    </div>
+    <h1>STRUMIFY</h1>
+    <p class="slogan">Tinh hoa chân mộc – Khải tấu hoan ca</p>
+    <div class="hero-btns">
+      <a href="/order" class="btn-hero-primary">
+        <i class="fa-solid fa-bag-shopping"></i> Mua sắm ngay
+      </a>
+      <a href="#about" class="btn-hero-outline">
+        <i class="fa-solid fa-circle-play"></i> Tìm hiểu thêm
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <i class="fa-solid fa-chevron-down"></i>
+    Cuộn xuống
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     2. STATS BAR
+     ══════════════════════════════════════════════════════════════ -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num" data-count="200" data-suffix="+">0</span>
+      <span class="stat-label">Sản phẩm</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-count="1500" data-suffix="+">0</span>
+      <span class="stat-label">Khách hàng</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-count="4" data-suffix="">0</span>
+      <span class="stat-label">Chi nhánh</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-count="5" data-suffix=" năm">0</span>
+      <span class="stat-label">Kinh nghiệm</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     3. GIỚI THIỆU
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Giới thiệu</div>
+      <h2>Tại sao chọn <em>STRUMIFY</em> ?</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrap">
+          <i class="fa-solid fa-medal"></i>
         </div>
-      </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-      <div class="hero-content">
-        <h1>Chào mừng đến với GuitarShop</h1>
-        <p>Nơi hội tụ những cây đàn guitar chất lượng cao nhất</p>
-        <a href="#products" class="btn btn-hero">Khám phá ngay</a>
+        <h3>Chất lượng đảm bảo</h3>
+        <p>100% sản phẩm chính hãng, được kiểm định kỹ lưỡng.</p>
       </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features">
-      <div class="container">
-        <h2 class="section-title">Tại sao chọn chúng tôi?</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🎵</div>
-            <h3>Chất lượng đảm bảo</h3>
-            <p>
-              100% sản phẩm chính hãng, được kiểm định kỹ lưỡng trước khi giao
-              đến tay khách hàng
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🚚</div>
-            <h3>Giao hàng nhanh</h3>
-            <p>
-              Giao hàng toàn quốc trong 24-48h, miễn phí với đơn hàng trên 2
-              triệu
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">💰</div>
-            <h3>Giá cả cạnh tranh</h3>
-            <p>Cam kết giá tốt nhất thị trường, hỗ trợ trả góp 0% lãi suất</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🛠️</div>
-            <h3>Bảo hành tận tâm</h3>
-            <p>Chế độ bảo hành lên đến 12 tháng, hỗ trợ kỹ thuật trọn đời</p>
-          </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">
+          <i class="fa-solid fa-truck-plane"></i>
         </div>
+        <h3>Giao hàng toàn quốc</h3>
+        <p>Miễn phí vận chuyển cho đơn hàng từ 50 triệu.</p>
       </div>
-    </section>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
+        <h3>Bảo hành tận tâm</h3>
+        <p>Bảo hành và hỗ trợ kỹ thuật trọn đời.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+        <h3>Tư vấn chuyên nghiệp</h3>
+        <p>Đội ngũ nhạc sĩ và chuyên viên tư vấn tận tâm.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">
+          <i class="fa-solid fa-rotate-left"></i>
+        </div>
+        <h3>Đổi trả dễ dàng</h3>
+        <p>Hoàn tiền 100% trong 7 ngày nếu không hài lòng.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+        <h3>Ưu đãi thành viên</h3>
+        <p>Tích điểm độc quyền cho khách hàng thân thiết.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- Products Section -->
-    <section class="products" id="products">
-      <div class="container">
-        <h2 class="section-title">Sản phẩm nổi bật</h2>
-        <div class="products-grid">
-          <div class="product-card">
-            <img
-              src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop"
-              alt="Yamaha F310 Acoustic Guitar"
-              class="product-image"
-            />
-            <div class="product-info">
-              <h3>Guitar Acoustic Yamaha F310</h3>
-              <p>
-                Guitar acoustic phổ biến cho người mới học, âm thanh ấm áp và
-                cân bằng
-              </p>
-              <div class="price">3.500.000đ</div>
-              <a href="/order"><button class="btn btn-buy">Mua ngay</button></a>
-            </div>
-          </div>
-          <div class="product-card">
-            <img
-              src="https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?w=400&h=300&fit=crop"
-              alt="Fender Stratocaster Electric Guitar"
-              class="product-image"
-            />
-            <div class="product-info">
-              <h3>Guitar Electric Fender Stratocaster</h3>
-              <p>Guitar điện cao cấp, âm thanh chuẩn rock, thiết kế iconic</p>
-              <div class="price">15.000.000đ</div>
-              <a href="/order"><button class="btn btn-buy">Mua ngay</button></a>
-            </div>
-          </div>
-          <div class="product-card">
-            <img
-              src="https://images.unsplash.com/photo-1556449895-a33c9dba33dd?w=400&h=300&fit=crop"
-              alt="Cordoba C5 Classical Guitar"
-              class="product-image"
-            />
-            <div class="product-info">
-              <h3>Guitar Classical Cordoba C5</h3>
-              <p>
-                Guitar classical cho nhạc cổ điển và flamenco, âm sắc truyền
-                thống
-              </p>
-              <div class="price">8.500.000đ</div>
-              <a href="/order"><button class="btn btn-buy">Mua ngay</button></a>
-            </div>
-          </div>
-          <div class="product-card">
-            <img
-              src="https://images.unsplash.com/photo-1556449895-a33c9dba33dd?w=400&h=300&fit=crop"
-              alt="Ibanez SR300E Bass Guitar"
-              class="product-image"
-            />
-            <div class="product-info">
-              <h3>Guitar Bass Ibanez SR300E</h3>
-              <p>
-                Bass guitar 4 dây chất lượng cao, âm bass mạnh mẽ và rõ ràng
-              </p>
-              <div class="price">12.000.000đ</div>
-              <a href="/order"><button class="btn btn-buy">Mua ngay</button></a>
-            </div>
-          </div>
-          <div class="product-card">
-            <img
-              src="https://images.unsplash.com/photo-1525201548942-d8732f6617a0?w=400&h=300&fit=crop"
-              alt="Taylor 214ce Acoustic Guitar"
-              class="product-image"
-            />
-            <div class="product-info">
-              <h3>Guitar Acoustic Taylor 214ce</h3>
-              <p>
-                Guitar acoustic cao cấp với pickup tích hợp, âm thanh tuyệt vời
-              </p>
-              <div class="price">22.000.000đ</div>
-              <a href="/order"><button class="btn btn-buy">Mua ngay</button></a>
-            </div>
-          </div>
-          <div class="product-card">
-            <img
-              src="https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&h=300&fit=crop"
-              alt="Gibson Les Paul Electric Guitar"
-              class="product-image"
-            />
-            <div class="product-info">
-              <h3>Guitar Electric Gibson Les Paul</h3>
-              <p>Guitar điện huyền thoại, âm thanh đậm đà cho rock và blues</p>
-              <div class="price">45.000.000đ</div>
-              <a href="/order"><button class="btn btn-buy">Mua ngay</button></a>
-            </div>
-          </div>
+<!-- ══════════════════════════════════════════════════════════════
+     4. DANH MỤC SẢN PHẨM
+     ══════════════════════════════════════════════════════════════ -->
+<section class="categories" id="products">
+  <div class="container">
+    <div class="section-header" style="margin-bottom: 40px">
+      <div class="section-tag" style="color: var(--gold-lt)">
+        <span style="background: var(--gold-lt); opacity: 0.5"></span>
+        Danh mục
+        <span style="background: var(--gold-lt); opacity: 0.5"></span>
+      </div>
+      <h2>
+        <i class="fa-brands fa-deezer" style="color: rgb(255, 255, 255)"></i>
+        NHẠC CỤ STRUMIFY
+      </h2>
+      <p>Khám phá bộ sưu tập nhạc cụ đa dạng từ khắp nơi trên thế giới</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="categories-grid">
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_guitar.jpg') }}"
+          alt="Guitar"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Guitar">GUITAR</a></div>
         </div>
       </div>
-    </section>
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_piano.jpg') }}"
+          alt="Piano"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Piano">PIANO</a></div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_organs.jpg') }}"
+          alt="Organ"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Organ">ORGAN</a></div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_drum.jpg') }}"
+          alt="Drum"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Drum">DRUM</a></div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_ukulele.jpg') }}"
+          alt="Ukulele"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Ukulele">UKULELE</a></div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_violin.jpg') }}"
+          alt="Violin"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Violin">VIOLIN</a></div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img
+          src="{{ url_for('static', path='icons/home_flute.jpg') }}"
+          alt="Flute"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.background = '#2a1a0a';
+          "
+        />
+        <div class="cat-label">
+          <div class="cat-arrow"><span></span><span></span></div>
+          <div class="cat-name"><a href="/order?cat=Flute">FLUTE</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- Footer -->
-    <footer>
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>Về GuitarShop</h3>
+<!-- ══════════════════════════════════════════════════════════════
+     5. KHÓA HỌC
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section section-alt" id="education">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Giáo dục âm nhạc</div>
+      <h2>
+        <i class="fa-solid fa-graduation-cap" style="color: rgb(0, 0, 0)"></i>
+        Khóa học âm nhạc
+      </h2>
+      <p>
+        Học nhạc cụ từ cơ bản đến nâng cao với đội ngũ giảng viên chuyên nghiệp.
+      </p>
+    </div>
+
+    <div class="courses-grid">
+      <div class="course-card">
+        <div class="course-video-wrapper" id="videoWrapper">
+          <video
+            id="coursePromoVideo"
+            src="{{ url_for('static', path='icons/piano_course.mp4') }}"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="auto"
+            onerror="console.error('Lỗi tải video:', this.error)"
+          ></video>
+
+          <div class="thumbnail-overlay"></div>
+        </div>
+        <div class="course-body">
+          <span class="course-tag">Piano</span>
+          <h3>Piano – Từ cổ điển đến hiện đại</h3>
           <p>
-            Chúng tôi là cửa hàng guitar uy tín hàng đầu tại Việt Nam, cung cấp
-            các sản phẩm guitar chính hãng với giá tốt nhất.
+            Kỹ thuật đặt tay chuẩn xác, lý thuyết âm nhạc, từ Beethoven đến Pop
+            & Jazz đương đại.
+          </p>
+          <div class="course-meta">
+            <span><i class="fa-regular fa-clock"></i> 1 năm</span>
+            <span><i class="fa-solid fa-users"></i> 15 học viên/lớp</span>
+            <span
+              ><i class="fa-solid fa-star" style="color: #f59e0b"></i> 5.0</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <div class="course-video-wrapper" id="videoWrapper">
+          <video
+            id="coursePromoVideo"
+            src="{{ url_for('static', path='icons/guitar_course.mp4') }}"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="auto"
+            onerror="console.error('Lỗi tải video:', this.error)"
+          ></video>
+
+          <div class="thumbnail-overlay"></div>
+        </div>
+        <div class="course-body">
+          <span class="course-tag">Guitar</span>
+          <h3>Guitar cơ bản đến nâng cao</h3>
+          <p>
+            Từ hợp âm đến kỹ thuật fingerstyle, học với giảng viên đã biểu diễn
+            cùng các ban nhạc hàng đầu.
+          </p>
+          <div class="course-meta">
+            <span><i class="fa-regular fa-clock"></i> 3 tháng</span>
+            <span><i class="fa-solid fa-users"></i> 12 học viên/lớp</span>
+            <span
+              ><i class="fa-solid fa-star" style="color: #f59e0b"></i> 5.0</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <div class="course-video-wrapper" id="videoWrapper">
+          <video
+            id="coursePromoVideo"
+            src="{{ url_for('static', path='icons/drum_course.mp4') }}"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="auto"
+            onerror="console.error('Lỗi tải video:', this.error)"
+          ></video>
+
+          <div class="thumbnail-overlay"></div>
+        </div>
+        <div class="course-body">
+          <span class="course-tag">Trống</span>
+          <h3>Trống nhạc – Nhịp điệu & Kỹ thuật</h3>
+          <p>
+            Kỹ thuật cầm dùi, phối hợp tay chân, từ groove cơ bản đến các fill
+            trống phức tạp trong Rock và Funk.
+          </p>
+          <div class="course-meta">
+            <span><i class="fa-regular fa-clock"></i> 6 tháng</span>
+            <span><i class="fa-solid fa-users"></i> 10 học viên/lớp</span>
+            <span
+              ><i class="fa-solid fa-star" style="color: #f59e0b"></i> 4.9</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 36px">
+      <a
+        href="{{ url_for('course') }}"
+        class="btn-hero-primary"
+        style="
+          background: var(--gold);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        "
+      >
+        <i class="fa-solid fa-book-open"></i> Xem tất cả khóa học
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     6. KHUYẾN MÃI
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="promotions">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Ưu đãi</div>
+      <h2>
+        <i class="fa-solid fa-tags" style="color: rgb(0, 0, 0)"></i>
+        Khuyến mãi đặc biệt
+      </h2>
+      <p>
+        Những ưu đãi hấp dẫn dành riêng cho khách hàng thân thiết và khách mới.
+      </p>
+    </div>
+
+    <div class="promos-grid">
+      <div class="promo-card promo-card-1">
+        <span class="promo-badge">Khách mới</span>
+        <h3>Ưu đãi chào mừng</h3>
+        <p>
+          Giảm ngay cho đơn hàng đầu tiên khi đăng ký tài khoản mới tại
+          STRUMIFY.
+        </p>
+        <span class="promo-discount">15% OFF</span>
+        <br />
+        <a href="/login" class="btn-promo">
+          <i class="fa-solid fa-user-plus"></i> Đăng ký ngay
+        </a>
+      </div>
+
+      <div class="promo-card promo-card-2">
+        <span class="promo-badge">Mùa hè 2026</span>
+        <h3>Flash Sale cuối tuần</h3>
+        <p>Sản phẩm giảm giá sâu mỗi thứ Bảy và Chủ nhật hàng tuần.</p>
+        <span class="promo-discount">Đến 30%</span>
+        <br />
+        <a href="/order" class="btn-promo">
+          <i class="fa-solid fa-bolt"></i> Xem ngay
+        </a>
+      </div>
+
+      <div class="promo-card promo-card-3">
+        <span class="promo-badge">Thành viên VIP</span>
+        <h3>Đặc quyền Diamond</h3>
+        <p>
+          Voucher sinh nhật giá trị lớn, tích điểm x3 và ưu tiên xử lý đơn hàng.
+        </p>
+        <span class="promo-discount">x3 điểm</span>
+        <br />
+        <a href="/profile" class="btn-promo">
+          <i class="fa-solid fa-gem"></i> Nâng cấp hội viên
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     7. CHI NHÁNH
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section section-alt" id="branches">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Hệ thống</div>
+      <h2>
+        <i class="fa-solid fa-building-user" style="color: rgb(0, 0, 0)"></i>
+        Chi nhánh hệ thống
+      </h2>
+      <p>4 chi nhánh cửa hàng tại các thành phố lớn sẵn sàng phục vụ.</p>
+    </div>
+
+    <div class="branches-grid">
+      <div class="branch-card">
+        <div class="branch-icon"><i class="fa-solid fa-shop"></i></div>
+        <h3>STRUMIFY – Quận 1</h3>
+        <div class="branch-info">
+          <p>
+            <i class="fa-solid fa-location-dot"></i> 123 Lê Duẩn, Quận 1, TP.HCM
+          </p>
+          <p><i class="fa-solid fa-phone"></i> 0901 234 567</p>
+          <p><i class="fa-regular fa-clock"></i> 8:00 – 21:00</p>
+        </div>
+        <span class="branch-open">Đang mở cửa</span>
+      </div>
+
+      <div class="branch-card">
+        <div class="branch-icon"><i class="fa-solid fa-shop"></i></div>
+        <h3>STRUMIFY – Quận 7</h3>
+        <div class="branch-info">
+          <p>
+            <i class="fa-solid fa-location-dot"></i> 45 Đinh Bộ Lĩnh, Q7, TP.HCM
+          </p>
+          <p><i class="fa-solid fa-phone"></i> 0901 234 568</p>
+          <p><i class="fa-regular fa-clock"></i>8:00 – 21:00</p>
+        </div>
+        <span class="branch-open">Đang mở cửa</span>
+      </div>
+
+      <div class="branch-card">
+        <div class="branch-icon"><i class="fa-solid fa-shop"></i></div>
+        <h3>STRUMIFY – Hà Nội</h3>
+        <div class="branch-info">
+          <p>
+            <i class="fa-solid fa-location-dot"></i> 78 Hoàng Cầu, Đống Đa, Hà
+            Nội
+          </p>
+          <p><i class="fa-solid fa-phone"></i> 024 3568 9012</p>
+          <p><i class="fa-regular fa-clock"></i>8:00 – 21:00</p>
+        </div>
+        <span class="branch-open">Đang mở cửa</span>
+      </div>
+
+      <div class="branch-card">
+        <div class="branch-icon"><i class="fa-solid fa-shop"></i></div>
+        <h3>STRUMIFY – Đà Nẵng</h3>
+        <div class="branch-info">
+          <p>
+            <i class="fa-solid fa-location-dot"></i> 12 Nguyễn Trãi, Hải Châu,
+            Đà Nẵng
+          </p>
+          <p><i class="fa-solid fa-phone"></i> 0236 3456 789</p>
+          <p><i class="fa-regular fa-clock"></i>8:00 – 21:00</p>
+        </div>
+        <span class="branch-open">Đang mở cửa</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     8. TESTIMONIALS
+     ══════════════════════════════════════════════════════════════ -->
+<section class="testimonials" id="reviews">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" style="color: var(--gold-lt)">
+        <span
+          style="
+            display: block;
+            width: 30px;
+            height: 1px;
+            background: var(--gold-lt);
+            opacity: 0.5;
+          "
+        ></span>
+        Đánh giá
+        <span
+          style="
+            display: block;
+            width: 30px;
+            height: 1px;
+            background: var(--gold-lt);
+            opacity: 0.5;
+          "
+        ></span>
+      </div>
+      <h2>
+        <i class="fa-solid fa-comments" style="color: rgb(255, 255, 255)"></i>
+        Khách hàng nói gì về chúng tôi?
+      </h2>
+      <p>Hơn 1.500 khách hàng đã tin tưởng STRUMIFY trong suốt 5 năm qua.</p>
+    </div>
+
+    <div class="testimonials-wrap">
+      <div class="testimonial-card">
+        <div class="ts-stars">★★★★★</div>
+        <p class="ts-quote">
+          "Chiếc guitar acoustic Taylor tôi mua ở đây có âm thanh tuyệt vời. Đội
+          ngũ tư vấn rất chuyên nghiệp, giúp tôi chọn đúng cây đàn phù hợp với
+          phong cách chơi của mình."
+        </p>
+        <div class="ts-author">
+          <div class="ts-avatar">M</div>
+          <div class="ts-info">
+            <div class="ts-name">Minh Tuấn</div>
+            <div class="ts-role">Nhạc sĩ bán chuyên, TP.HCM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="ts-stars">★★★★★</div>
+        <p class="ts-quote">
+          "Tôi đã mua Violin cho con gái học nhạc. Chất lượng đàn rất tốt cho
+          mức giá ưu đãi, nhân viên tư vấn nhiệt tình và kiên nhẫn giải thích
+          từng chi tiết."
+        </p>
+        <div class="ts-author">
+          <div class="ts-avatar">L</div>
+          <div class="ts-info">
+            <div class="ts-name">Lan Phương</div>
+            <div class="ts-role">Phụ huynh học viên, Hà Nội</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="ts-stars">★★★★★</div>
+        <p class="ts-quote">
+          "Giao hàng nhanh, đóng gói cẩn thận. Bộ trống tôi đặt online về đúng
+          như mô tả, thậm chí còn tốt hơn. Sẽ tiếp tục ủng hộ STRUMIFY."
+        </p>
+        <div class="ts-author">
+          <div class="ts-avatar">H</div>
+          <div class="ts-info">
+            <div class="ts-name">Hoàng Nam</div>
+            <div class="ts-role">Drummer band rock, Đà Nẵng</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="testimonialDots" style="margin-top: 28px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     9. FAQ
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Hỗ trợ</div>
+      <h2>
+        <i
+          class="fa-solid fa-file-circle-question"
+          style="color: rgb(0, 0, 0)"
+        ></i>
+        Câu hỏi thường gặp
+      </h2>
+      <p>Những thắc mắc phổ biến nhất từ khách hàng của chúng tôi.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item open">
+        <button class="faq-question">
+          Chính sách bảo hành như thế nào?
+          <span class="faq-icon"><i class="fa-solid fa-plus"></i></span>
+        </button>
+        <div class="faq-answer">
+          <p>
+            STRUMIFY bảo hành 6 tháng cho tất cả nhạc cụ chính hãng. Trong
+            trường hợp sản phẩm có lỗi đến từ nhà sản xuất, STRUMIFY sẽ hoàn đổi
+            mới miễn phí. Hỗ trợ kỹ thuật trọn đời qua hotline và email.
           </p>
         </div>
-        <div class="footer-section">
-          <h3>Liên kết nhanh</h3>
-          <ul>
-            <li><a href="#home">Trang chủ</a></li>
-            <li><a href="#products">Sản phẩm</a></li>
-            <li><a href="#about">Giới thiệu</a></li>
-            <li><a href="#contact">Liên hệ</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Liên hệ</h3>
-          <ul>
-            <li>📍 123 Đường ABC, Quận 1, TP.HCM</li>
-            <li>📞 0901 234 567</li>
-            <li>📧 info@guitarshop.vn</li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Theo dõi chúng tôi</h3>
-          <ul>
-            <li><a href="#">Facebook</a></li>
-            <li><a href="#">Instagram</a></li>
-            <li><a href="#">YouTube</a></li>
-          </ul>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Có thể đặt hàng online và nhận tại cửa hàng không?
+          <span class="faq-icon"><i class="fa-solid fa-plus"></i></span>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Có! Bạn có thể đặt hàng trực tuyến và chọn nhận tại 1 trong 4 chi
+            nhánh trên toàn quốc. Đơn hàng sẽ sẵn sàng trong vòng 24 giờ kể từ
+            khi đặt hàng thành công.
+          </p>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; 2024 GuitarShop. All rights reserved.</p>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          STRUMIFY có nhận sửa chữa nhạc cụ không?
+          <span class="faq-icon"><i class="fa-solid fa-plus"></i></span>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Có, tất cả chi nhánh đều có xưởng sửa chữa với đội ngũ chuyên
+            nghiệp. Dịch vụ bao gồm: thay dây, chỉnh âm, sửa cần đàn, phục hồi
+            thân đàn và nhiều hơn nữa. Thời gian ước tính và báo giá minh bạch
+            trước khi tiến hành. Nếu như khách hàng mua nhạc cụ tại STRUMIFY sẽ
+            được bảo hành sửa chữa trọn đời.
+          </p>
+        </div>
       </div>
-    </footer>
-  </body>
-</html>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Tôi chưa biết chọn nhạc cụ nào phù hợp, có được tư vấn không?
+          <span class="faq-icon"><i class="fa-solid fa-plus"></i></span>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Đội ngũ chuyên viên của chúng tôi sẽ tư vấn miễn phí qua hotline,
+            live chat hoặc trực tiếp tại cửa hàng. Chúng tôi sẽ hỏi về mục tiêu,
+            ngân sách và sở thích âm nhạc để đề xuất sản phẩm phù hợp nhất.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Phương thức thanh toán nào được chấp nhận?
+          <span class="faq-icon"><i class="fa-solid fa-plus"></i></span>
+        </button>
+        <div class="faq-answer">
+          <p>
+            STRUMIFY chấp nhận: Tiền mặt khi nhận hàng (COD), Chuyển khoản ngân
+            hàng, Ví điện tử MoMo và ZaloPay. Đối với đơn hàng lớn, chúng tôi hỗ
+            trợ trả góp 0.1% lãi suất qua các ngân hàng đối tác.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     10. NEWSLETTER
+     ══════════════════════════════════════════════════════════════ -->
+<section class="newsletter" id="newsletter">
+  <div class="container">
+    <h2>Đăng ký nhận ưu đãi độc quyền</h2>
+    <p>
+      Nhận thông báo về sản phẩm mới, khuyến mãi và mẹo chơi nhạc cụ hàng tuần.
+    </p>
+    <div class="newsletter-form">
+      <input
+        type="email"
+        class="newsletter-input"
+        placeholder="Nhập địa chỉ email của bạn…"
+      />
+      <button class="btn-newsletter">
+        <a href="/templates/regiter&login"
+          ><i class="fa-solid fa-paper-plane"></i> Đăng ký</a
+        >
+      </button>
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block custom_js %}
+<script src="{{ url_for('static', path='js/home.js') }}?v=1005"></script>
+{% endblock %}

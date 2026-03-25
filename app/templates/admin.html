@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STRUMIFY – Quản Trị Hệ Thống</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/admin.css') }}"
+    />
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-brand">
+        <h1>STRUMIFY</h1>
+        <span>Hệ thống quản trị</span>
+      </div>
+      <nav class="sb-nav">
+        <div class="sb-sec">Tổng quan</div>
+        <button
+          class="nav-item active"
+          data-tab="dashboard"
+          onclick="gotoTab(this)"
+        >
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </button>
+        <div class="sb-sec">Quản lý</div>
+        <button class="nav-item" data-tab="products" onclick="gotoTab(this)">
+          <i class="fa-solid fa-guitar"></i> Sản phẩm
+        </button>
+        <button class="nav-item" data-tab="inventory" onclick="gotoTab(this)">
+          <i class="fa-solid fa-warehouse"></i> Kho hàng
+        </button>
+        <button class="nav-item" data-tab="orders" onclick="gotoTab(this)">
+          <i class="fa-solid fa-box-open"></i> Đơn hàng
+        </button>
+        <button class="nav-item" data-tab="users" onclick="gotoTab(this)">
+          <i class="fa-solid fa-users"></i> Người dùng
+        </button>
+        <div class="sb-sec">Nội dung</div>
+        <button class="nav-item" data-tab="blog" onclick="gotoTab(this)">
+          <i class="fa-solid fa-newspaper"></i> Tin tức
+        </button>
+        <button class="nav-item" data-tab="promos" onclick="gotoTab(this)">
+          <i class="fa-solid fa-tag"></i> Khuyến mãi
+        </button>
+        <button class="nav-item" data-tab="settings" onclick="gotoTab(this)">
+          <i class="fa-solid fa-gear"></i> Cài đặt
+        </button>
+      </nav>
+      <div class="sb-foot">
+        <div class="admin-chip">
+          <i class="fa-solid fa-shield-halved"></i> ADMIN
+        </div>
+        <br />
+        <button class="btn-logout" onclick="adminLogout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button
+            id="menuBtn"
+            onclick="
+              document.getElementById('sidebar').classList.toggle('open')
+            "
+          >
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div>
+            <div class="topbar-title" id="ttitle">Dashboard</div>
+            <div class="topbar-sub" id="tsub">Tổng quan hệ thống</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div style="text-align: right">
+            <div class="topbar-name" id="tname">Admin</div>
+            <div class="topbar-role">Quản trị viên</div>
+          </div>
+          <img
+            class="topbar-avatar"
+            id="tavatar"
+            src="https://ui-avatars.com/api/?name=Admin&background=8c2626&color=fff&bold=true&size=80"
+            alt=""
+          />
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="page active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-lbl">Doanh thu</div>
+              <div class="stat-val" id="s-rev">—</div>
+              <div class="stat-sub">Đơn đã giao</div>
+              <i class="fa-solid fa-sack-dollar stat-ico"></i>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-lbl">Lợi nhuận (Ước tính)</div>
+              <div class="stat-val" id="s-profit">—</div>
+              <div class="stat-sub">Dựa trên giá nhập</div>
+              <i class="fa-solid fa-chart-line stat-ico"></i>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-lbl">Đơn hàng</div>
+              <div class="stat-val" id="s-ord">—</div>
+              <div class="stat-sub">Tổng số đơn</div>
+              <i class="fa-solid fa-box-open stat-ico"></i>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-lbl">Tồn kho</div>
+              <div class="stat-val" id="s-stock">—</div>
+              <div class="stat-sub">Tổng SP trong kho</div>
+              <i class="fa-solid fa-warehouse stat-ico"></i>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2>
+                  <i
+                    class="fa-solid fa-clock-rotate-left"
+                    style="color: var(--gold)"
+                  ></i>
+                  Đơn hàng gần đây
+                </h2>
+              </div>
+              <button
+                class="btn btn-ghost btn-sm"
+                onclick="gotoTabById('orders')"
+              >
+                Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-ord"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="page-products">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2>
+                  <i class="fa-solid fa-guitar" style="color: var(--gold)"></i>
+                  Quản lý sản phẩm
+                </h2>
+                <p id="prod-count"></p>
+              </div>
+              <button class="btn btn-primary" onclick="openProdModal()">
+                <i class="fa-solid fa-plus"></i> Thêm sản phẩm
+              </button>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Kho</th>
+                    <th>Giá nhập</th>
+                    <th>Giá bán</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="prod-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="page-inventory">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2>
+                  <i
+                    class="fa-solid fa-warehouse"
+                    style="color: var(--gold)"
+                  ></i>
+                  Lịch sử xuất / nhập kho
+                </h2>
+              </div>
+              <button class="btn btn-primary">
+                <i class="fa-solid fa-truck-ramp-box"></i> Tạo phiếu nhập
+              </button>
+            </div>
+            <div class="empty" style="padding: 50px">
+              Tính năng quản lý phiếu nhập/xuất kho chi tiết sẽ được xây dựng
+              tại đây.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast-el"></div>
+
+    <script src="{{ url_for('static', path='/js/admin.js') }}"></script>
+  </body>
+</html>

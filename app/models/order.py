@@ -1,6 +1,6 @@
 from app.database.database import Base
 from datetime import UTC, datetime
-from sqlalchemy import DateTime, Integer, String, Float, ForeignKey, func
+from sqlalchemy import DateTime, Integer, String, Float, ForeignKey, func, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional
 
@@ -17,3 +17,8 @@ class Order(Base):
 #Relationship
     user: Mapped["User"] = relationship(back_populates="orders")    
     product: Mapped["Product"] = relationship(back_populates="orders")
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="orders")

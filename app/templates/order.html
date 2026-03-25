@@ -1,121 +1,507 @@
-<!doctype html>
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đặt hàng - GuitarShop</title>
-    <link rel="stylesheet" type="text/css" href="static/css/order.css" />
-    <script src=".\static\js\order.js"></script>
-  </head>
-  <body>
-    <!-- Header -->
-    <header>
-      <nav>
-        <a href="home.html" class="logo">
+{% extends "base.html" %} {% block custom_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', path='css/order.css') }}?v=1001"
+/>
+{% endblock %} {% block content %} {# ── Map danh mục → file ảnh hải lí linh vật
+── #} {% set MASCOT = { 'Guitar': 'guitar.png', 'Violin': 'vioin.png', 'Piano':
+'piano.png', 'Drum': 'drum.png', 'Flute': 'flute.png', 'Organ': 'organ.png',
+'Ukulele': 'ukulele.png', 'Khác': 'harp.png' } %}
+
+<div class="main-container">
+  <h1 class="page-title">
+    <i class="fa-solid fa-guitar fa-beat"></i> SẢN PHẨM STRUMIFY
+  </h1>
+  <p class="page-subtitle">
+    Khám phá bộ sưu tập nhạc cụ thủ công chất lượng cao
+  </p>
+
+  <!-- ── CATEGORY TABS ── -->
+  <div class="cat-tabs">
+    <button class="cat-tab active" data-cat="all">
+      <i class="fa-solid fa-border-all"></i> Tất cả
+    </button>
+    <button class="cat-tab" data-cat="Guitar">
+      <i class="fa-solid fa-guitar"></i> Guitar
+    </button>
+    <button class="cat-tab" data-cat="Violin">
+      <i class="fa-solid fa-music"></i> Violin
+    </button>
+    <button class="cat-tab" data-cat="Piano">
+      <i class="fa-solid fa-music"></i> Piano
+    </button>
+    <button class="cat-tab" data-cat="Drum">
+      <i class="fa-solid fa-drum"></i> Drum
+    </button>
+    <button class="cat-tab" data-cat="Flute">
+      <i class="fa-solid fa-wind"></i> Flute
+    </button>
+    <button class="cat-tab" data-cat="Organ">
+      <i class="fa-solid fa-sliders"></i> Organ
+    </button>
+    <button class="cat-tab" data-cat="Ukulele">
+      <i class="fa-solid fa-guitar"></i> Ukulele
+    </button>
+    <button class="cat-tab" data-cat="Khác">
+      <i class="fa-solid fa-box-open"></i> Khác
+    </button>
+  </div>
+
+  <!-- ── FILTERS BAR ── -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <div class="filter-group">
+        <label for="categoryFilter"
+          ><i class="fa-solid fa-filter"></i> Loại:</label
+        >
+        <select id="categoryFilter">
+          <option value="all">Tất cả</option>
+          <option value="Guitar">Guitar</option>
+          <option value="Violin">Violin</option>
+          <option value="Piano">Piano</option>
+          <option value="Drum">Drum</option>
+          <option value="Flute">Flute</option>
+          <option value="Organ">Organ</option>
+          <option value="Ukulele">Ukulele</option>
+          <option value="Khác">Khác</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="priceSort"
+          ><i class="fa-solid fa-arrow-up-wide-short"></i> Sắp xếp:</label
+        >
+        <select id="priceSort">
+          <option value="default">Mặc định</option>
+          <option value="low">Giá thấp → cao</option>
+          <option value="high">Giá cao → thấp</option>
+          <option value="new">Mới về</option>
+          <option value="sale">Giảm giá</option>
+          <option value="hot">Bán chạy</option>
+          <option value="limited">Giới hạn</option>
+        </select>
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm…" />
+      </div>
+    </div>
+  </div>
+
+  <p class="results-count" id="resultsCount"></p>
+
+  <!-- ── PRODUCTS GRID ── -->
+  <div class="products-section" id="productsSection">
+    {% if guitars %} {% for g in guitars %} {# Chọn ảnh linh vật tương ứng danh
+    mục #} {% set mascot_file = MASCOT.get(g.cat, '') %}
+
+    <div class="product-card" data-id="{{ g.id }}" data-category="{{ g.cat }}">
+      <!-- Ảnh sản phẩm + nút thêm giỏ -->
+      <div class="product-image">
+        {# ---------- Ảnh linh vật hải lí (góc trên-phải) ---------- #} {% if
+        mascot_file %}
+        <div class="mascot-corner">
           <img
-            src="/mnt/user-data/uploads/1770637732281_image.png"
-            alt="GuitarShop Logo"
+            src="{{ url_for('static', path='/icons/nm/' + mascot_file) }}"
+            alt="Linh vật {{ g.cat }}"
+            class="mascot-img"
+            loading="lazy"
           />
-          <span class="logo-text">GuitarShop</span>
-        </a>
-        <ul class="nav-links">
-          <li><a href="home.html">Trang chủ</a></li>
-          <li><a href="order.html">Sản phẩm</a></li>
-          <li><a href="#about">Giới thiệu</a></li>
-          <li><a href="#contact">Liên hệ</a></li>
-        </ul>
-        <div class="cart-icon" onclick="toggleCart()">
-          🛒
-          <span class="cart-count" id="cartCount">0</span>
         </div>
-      </nav>
-    </header>
+        {% endif %} {# ---------- Ảnh chính của sản phẩm ---------- #} {% set
+        img_src = '' %} {% if g.img %} {% if g.img.startswith('http') %} {% set
+        img_src = g.img %} {% else %} {% set img_src =
+        "https://wpbmixpiydtbrgcentrt.supabase.co/storage/v1/object/public/TEN_BUCKET_CUA_BAN/"
+        ~ g.img %} {% endif %} {% endif %} {% if img_src %}
+        <img
+          src="{{ img_src }}"
+          alt="{{ g.name }}"
+          loading="lazy"
+          onerror="
+            this.onerror = null;
+            this.style.display = 'none';
+            this.nextElementSibling.style.display = 'flex';
+          "
+        />
+        <div class="img-placeholder" style="display: none">
+          <i class="fa-solid fa-guitar"></i>
+        </div>
+        {% else %}
+        <div class="img-placeholder">
+          <i class="fa-solid fa-guitar"></i>
+        </div>
+        {% endif %} {#
+        ============================================================ BADGE LOGIC
+        – thay thế đoạn {% if g.badge %} cũ trong card Ưu tiên: SALE > HOT > NEW
+        > LIMITED (chỉ hiện 1 badge)
+        ============================================================ #} {# Tính
+        % giảm giá nếu có #} {% set orig_p = g.orig | default(0) | int %} {% set
+        cur_p = g.price | default(0) | int %} {% set pct = (((orig_p - cur_p) /
+        orig_p * 100) | round | int) if orig_p > cur_p else 0 %} {# Điều kiện
+        từng loại #} {% set is_sale = orig_p > cur_p %} {% set is_hot =
+        (g.reviews | default(0) | int) >= 50 and (g.rating | default(0) | float)
+        >= 4.3 %} {% set is_new = g.badge | default('') | lower == 'new' %} {%
+        set is_limited = g.badge | default('') | lower in ['limited', 'giới
+        hạn'] %} {% if is_sale %}
+        <span class="product-badge badge-sale">
+          <i class="fa-solid fa-bolt"></i>
+          −{{ pct }}%
+        </span>
 
-    <!-- Main Container -->
-    <div class="main-container">
-      <h1 class="page-title">Cửa hàng Guitar</h1>
-      <p class="page-subtitle">Khám phá bộ sưu tập guitar chất lượng cao</p>
+        {% elif is_hot %}
+        <span class="product-badge badge-hot">
+          <i class="fa-solid fa-fire"></i>
+          Bán chạy
+        </span>
 
-      <!-- Filters Section -->
-      <div class="filters-section">
-        <div class="filters-container">
-          <div class="filter-group">
-            <label for="categoryFilter">Loại:</label>
-            <select id="categoryFilter">
-              <option value="all">Tất cả</option>
-              <option value="Acoustic">Acoustic</option>
-              <option value="Electric">Electric</option>
-              <option value="Classical">Classical</option>
-              <option value="Bass">Bass</option>
-            </select>
-          </div>
+        {% elif is_new %}
+        <span class="product-badge badge-new">
+          <i class="fa-solid fa-sparkles"></i>
+          Mới về
+        </span>
 
-          <div class="filter-group">
-            <label for="priceSort">Sắp xếp:</label>
-            <select id="priceSort">
-              <option value="default">Mặc định</option>
-              <option value="low">Giá thấp → cao</option>
-              <option value="high">Giá cao → thấp</option>
-            </select>
-          </div>
+        {% elif is_limited %}
+        <span class="product-badge badge-limited">
+          <i class="fa-solid fa-hourglass-half"></i>
+          Giới hạn
+        </span>
+        {% endif %}
 
-          <div class="search-box">
+        <!-- Nút thêm vào giỏ nổi lên khi hover -->
+        <button
+          class="add-to-cart-btn"
+          onclick="event.stopPropagation(); addToCart({{ g.id }}, {{ g.price | default(0) | int }})"
+          title="Thêm vào giỏ"
+        >
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+
+      <!-- Thông tin sản phẩm -->
+      <div class="product-info">
+        <h3 class="product-name">{{ g.name }}</h3>
+
+        <div class="product-rating">
+          {% set current_rating = g.rating | default(0) | float %} {% if
+          current_rating > 0 %} {% set full = current_rating | int %} {% set
+          half = 1 if (current_rating - full) >= 0.5 else 0 %} {% set empty = (5
+          - full - half) | int %}
+          <span class="stars">
+            {% for i in range(full) %}<i class="fa-solid fa-star"></i>{% endfor
+            %} {% if half == 1 %}<i class="fa-solid fa-star-half-stroke"></i>{%
+            endif %} {% for i in range(empty) %}<i
+              class="fa-regular fa-star"
+            ></i
+            >{% endfor %}
+          </span>
+          <span class="rating-num">{{ "%.1f"|format(current_rating) }}</span>
+          {% if g.reviews and g.reviews > 0 %}
+          <span class="rating-count">({{ g.reviews }})</span>
+          {% endif %} {% else %}
+          <span class="no-rating">Chưa có đánh giá</span>
+          {% endif %}
+        </div>
+
+        <div class="product-price-row">
+          <p class="product-price">
+            {{ "{:,.0f}".format(g.price | default(0) | int) }}₫
+          </p>
+          {% set orig_price = g.orig | default(0) | int %} {% set cur_price =
+          g.price | default(0) | int %} {% if orig_price > cur_price %}
+          <p class="product-orig">{{ "{:,.0f}".format(orig_price) }}₫</p>
+          {% endif %}
+        </div>
+
+        <button class="view-detail-btn" onclick="openProductModal({{ g.id }})">
+          <i class="fa-solid fa-eye"></i> Xem chi tiết
+        </button>
+      </div>
+    </div>
+
+    {% endfor %} {% else %}
+    <div class="no-products">
+      <i class="fa-solid fa-box-open"></i>
+      <p>Chưa có sản phẩm nào.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── CART OVERLAY + SIDEBAR ── -->
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</h2>
+      <button class="close-cart" onclick="toggleCart()">✕</button>
+    </div>
+
+    <div class="cart-items" id="cartItems"></div>
+
+    <div class="cart-footer">
+      <div class="coupon-row">
+        <input
+          type="text"
+          class="coupon-input"
+          id="couponInput"
+          placeholder="MÃ GIẢM GIÁ"
+        />
+        <button class="coupon-btn" onclick="applyCoupon()">
+          <i class="fa-solid fa-tag"></i> Áp dụng
+        </button>
+      </div>
+      <p class="coupon-msg" id="couponMsg"></p>
+
+      <div class="price-summary">
+        <div class="price-row">
+          <span>Tạm tính</span>
+          <span id="summarySubtotal">0₫</span>
+        </div>
+        <div class="price-row discount">
+          <span><i class="fa-solid fa-circle-minus"></i> Giảm giá</span>
+          <span id="summaryDiscount">−0₫</span>
+        </div>
+        <div class="price-row total">
+          <span>Tổng cộng</span>
+          <span id="summaryTotal">0₫</span>
+        </div>
+      </div>
+
+      <button
+        class="checkout-btn"
+        id="checkoutBtn"
+        onclick="openCheckout()"
+        disabled
+      >
+        <i class="fa-solid fa-lock"></i> Thanh toán ngay
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PRODUCT DETAIL MODAL ── -->
+  <div
+    class="modal-overlay"
+    id="productModal"
+    onclick="handleModalOverlayClick(event)"
+  >
+    <div
+      class="modal"
+      style="
+        max-width: 900px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        border-radius: 12px;
+      "
+    >
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-circle-info"></i> Chi tiết sản phẩm</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody" style="padding: 20px"></div>
+    </div>
+  </div>
+
+  <!-- ── CHECKOUT MODAL ── -->
+  <div class="checkout-modal-overlay" id="checkoutModal">
+    <div class="checkout-modal">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-bag-shopping"></i> Xác nhận đơn hàng</h2>
+        <button class="modal-close" onclick="closeCheckout()">✕</button>
+      </div>
+
+      <div class="co-section">
+        <h3><i class="fa-solid fa-list-check"></i> Sản phẩm đặt mua</h3>
+        <div id="coItemList"></div>
+      </div>
+
+      <div class="co-section">
+        <h3><i class="fa-solid fa-tag"></i> Mã giảm giá</h3>
+        <p
+          id="coAppliedCoupon"
+          style="font-size: 13px; color: var(--text-muted)"
+        >
+          Chưa áp dụng
+        </p>
+      </div>
+
+      <div class="co-section">
+        <h3><i class="fa-solid fa-location-dot"></i> Thông tin giao hàng</h3>
+        <div class="co-form-grid">
+          <div>
+            <label class="co-label">Họ và tên *</label>
             <input
               type="text"
-              id="searchInput"
-              placeholder="Tìm kiếm guitar..."
+              class="co-input"
+              id="co-name"
+              placeholder="Nguyễn Văn A"
+            />
+          </div>
+          <div>
+            <label class="co-label">Số điện thoại *</label>
+            <input
+              type="tel"
+              class="co-input"
+              id="co-phone"
+              placeholder="09xxxxxxxx"
+            />
+          </div>
+          <div>
+            <label class="co-label">Email</label>
+            <input
+              type="email"
+              class="co-input"
+              id="co-email"
+              placeholder="email@example.com"
+            />
+          </div>
+          <div class="full">
+            <label class="co-label">Địa chỉ giao hàng *</label>
+            <input
+              type="text"
+              class="co-input"
+              id="co-address"
+              placeholder="Số nhà, đường, quận, thành phố"
+            />
+          </div>
+          <div class="full">
+            <label class="co-label">Ghi chú đơn hàng</label>
+            <input
+              type="text"
+              class="co-input"
+              id="co-note"
+              placeholder="Yêu cầu đặc biệt…"
             />
           </div>
         </div>
       </div>
 
-      <!-- Products Section -->
-      <div class="products-section" id="productsSection">
-        <!-- Products will be rendered here by JavaScript -->
-      </div>
-    </div>
-
-    <!-- Cart Sidebar -->
-    <div class="cart-sidebar" id="cartSidebar">
-      <div class="cart-header">
-        <h2>Giỏ hàng</h2>
-        <button class="close-cart" onclick="toggleCart()">✕</button>
-      </div>
-
-      <div class="cart-items" id="cartItems">
-        <!-- Cart items will be rendered here -->
-      </div>
-
-      <div class="cart-footer">
-        <div class="cart-total">
-          <span>Tổng cộng:</span>
-          <span id="cartTotal">0đ</span>
+      <div class="co-section">
+        <h3><i class="fa-solid fa-credit-card"></i> Phương thức thanh toán</h3>
+        <input type="hidden" id="coPayMethod" />
+        <div class="pay-options">
+          <div class="pay-option" data-method="cod">
+            <input type="radio" name="payMethod" value="cod" />
+            <div>
+              <div class="pay-label">
+                <i class="fa-solid fa-money-bill-wave"></i> Thanh toán khi nhận
+                hàng (COD)
+              </div>
+              <div class="pay-desc">Trả tiền mặt khi shipper giao hàng.</div>
+            </div>
+          </div>
+          <div class="pay-option" data-method="bank">
+            <input type="radio" name="payMethod" value="bank" />
+            <div>
+              <div class="pay-label">
+                <i class="fa-solid fa-building-columns"></i> Chuyển khoản ngân
+                hàng
+              </div>
+              <div class="pay-desc">Chuyển khoản trước, xác nhận sau.</div>
+            </div>
+          </div>
+          <div class="bank-details" id="bankDetails" style="display: none">
+            <div class="bank-row">
+              <span>Ngân hàng</span><span>MB Bank</span>
+            </div>
+            <div class="bank-row">
+              <span>Số tài khoản</span><span>89779799999</span>
+            </div>
+            <div class="bank-row">
+              <span>Chủ tài khoản</span><span>CÔNG TY STRUMIFY INSTRUMENT</span>
+            </div>
+            <div class="bank-note">
+              <i class="fa-solid fa-circle-info"></i>
+              Nội dung CK: <strong>[Tên] – [SĐT] – STRUMIFY</strong>
+            </div>
+          </div>
+          <div class="pay-option" data-method="momo">
+            <input type="radio" name="payMethod" value="momo" />
+            <div>
+              <div class="pay-label">
+                <i class="fa-solid fa-mobile-screen-button"></i> Ví MoMo /
+                ZaloPay
+              </div>
+              <div class="pay-desc">SĐT: <strong>0944024055</strong></div>
+            </div>
+          </div>
         </div>
-        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
-          Thanh toán
-        </button>
       </div>
-    </div>
 
-    <!-- Product Modal -->
-    <div class="modal-overlay" id="productModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Chi tiết sản phẩm</h2>
-          <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="co-totals">
+        <div class="co-total-row">
+          <span>Tạm tính</span><span id="coSubtotal">0₫</span>
         </div>
-        <div class="modal-body" id="modalBody">
-          <!-- Modal content will be rendered here -->
+        <div class="co-total-row discount">
+          <span><i class="fa-solid fa-circle-minus"></i> Giảm giá</span>
+          <span id="coDiscount">−0₫</span>
+        </div>
+        <div class="co-total-row">
+          <span>Phí vận chuyển</span>
+          <span style="color: var(--green); font-weight: 700">Miễn phí</span>
+        </div>
+        <div class="co-total-row final">
+          <span>Tổng thanh toán</span><span id="coTotal">0₫</span>
         </div>
       </div>
-    </div>
 
-    <!-- Notification -->
-    <div class="notification success" id="notification">
-      <div class="notification-content">
-        <span class="notification-icon">✅</span>
-        <span id="notificationMessage"></span>
-      </div>
+      <button class="place-order-btn" onclick="placeOrder()">
+        <i class="fa-solid fa-paper-plane"></i> Đặt hàng ngay
+      </button>
     </div>
-  </body>
-</html>
+  </div>
+
+  <!-- ── SUCCESS MODAL ── -->
+  <div class="success-modal-overlay" id="successModal">
+    <div class="success-modal">
+      <span class="success-icon">🎸</span>
+      <h3>Đặt hàng thành công!</h3>
+      <p>
+        Cảm ơn bạn đã tin tưởng STRUMIFY.<br />
+        Chúng tôi sẽ liên hệ xác nhận sớm nhất.
+      </p>
+      <div class="success-order-id" id="successOrderId"></div>
+      <button class="success-close-btn" onclick="closeSuccess()">
+        <i class="fa-solid fa-check"></i> Hoàn tất
+      </button>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast-notification" id="toastNotification">
+    <span class="toast-icon" id="toastIcon"></span>
+    <span class="toast-text" id="toastText"></span>
+  </div>
+</div>
+
+<!-- PRODUCT_DATA: dùng bởi order.js (addToCart, openProductModal) -->
+<script>
+  const PRODUCT_DATA = [
+    {% for g in guitars %}
+    {
+      id:          {{ g.id | default('null') }},
+      name:        {{ g.name        | default('') | tojson }},
+      description: {{ g.description | default('') | tojson }},
+      category:    {{ g.cat         | default('') | tojson }},
+      price:       {{ g.price       | default(0)  | int }},
+      orig:        {{ g.orig        | default(0)  | int }},
+      raw_img:     {{ g.img         | default('') | tojson }},
+      rating:      {{ g.rating      | default(0)  | float }},
+      reviews:     {{ g.reviews     | default(0)  | int }},
+      specs:       {{ g.specs       | default({}) | tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ].map(p => {
+    if (p.raw_img) {
+      p.image_url = p.raw_img.startsWith('http')
+        ? p.raw_img
+        : (typeof SUPABASE_URL !== 'undefined' && typeof BUCKET_NAME !== 'undefined'
+            ? SUPABASE_URL + BUCKET_NAME + '/' + encodeURIComponent(p.raw_img)
+            : p.raw_img);
+    } else {
+      p.image_url = '';
+    }
+    return p;
+  });
+</script>
+
+{% endblock %} {% block custom_js %}
+<script src="{{ url_for('static', path='js/order.js') }}?v=1001"></script>
+{% endblock %}
