@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # 1. Quản lý vòng đời ứng dụng (Lifespan)
 
 app = FastAPI(title="Strumify API")
+
 # --- ĐOẠN CODE CẤP PHÉP CORS BẮT BUỘC PHẢI CÓ ---
 app.add_middleware(
     CORSMiddleware,
