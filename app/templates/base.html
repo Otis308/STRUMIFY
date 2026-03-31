@@ -3,6 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      /* Reset cơ bản */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        overflow-x: hidden; /* Không tràn ngang */
+      }
+
+      img {
+        max-width: 100%;
+        height: auto; /* Ảnh không bao giờ méo/tràn */
+        display: block;
+      }
+    </style>
     <title>STRUMIFY – Nhạc cụ thủ công chất lượng cao</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,6 +44,9 @@
     <!-- ══ HEADER / NAVBAR ══════════════════════════════════════════ -->
     <header class="site-header" id="siteHeader">
       <nav class="navbar">
+        <button class="hamburger" id="hamburger">
+          <span></span><span></span><span></span>
+        </button>
         <ul class="nav-left nav-menu" id="navLinks">
           <li><a href="/#about">Giới thiệu</a></li>
           <li class="dropdown"><a href="/order">Sản phẩm</a></li>
@@ -222,7 +243,6 @@
         <p>&copy; 2024 STRUMIFY. Tất cả quyền được bảo lưu.</p>
       </div>
     </footer>
-
     {% block custom_js %}{% endblock %}
   </body>
 </html>

@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block custom_css %}
 <link
   rel="stylesheet"
-  href="{{ url_for('static', path='css/order.css') }}?v=1001"
+  href="{{ url_for('static', path='css/order.css') }}?v=1.1"
 />
 {% endblock %} {% block content %} {# ── Map danh mục → file ảnh hải lí linh vật
 ── #} {% set MASCOT = { 'Guitar': 'guitar.png', 'Violin': 'vioin.png', 'Piano':
@@ -107,11 +107,14 @@
             loading="lazy"
           />
         </div>
-        {% endif %} {# ---------- Ảnh chính của sản phẩm ---------- #} {% set
-        img_src = '' %} {% if g.img %} {% if g.img.startswith('http') %} {% set
-        img_src = g.img %} {% else %} {% set img_src =
-        "https://wpbmixpiydtbrgcentrt.supabase.co/storage/v1/object/public/TEN_BUCKET_CUA_BAN/"
-        ~ g.img %} {% endif %} {% endif %} {% if img_src %}
+        {% endif %} {# ---------- Ảnh chính của sản phẩm ---------- #} {# Ưu
+        tiên image_url (đã là full URL từ Supabase), fallback sang img #} {% if
+        g.image_url %} {% set img_src = g.image_url %} {% elif g.img and
+        g.img.startswith('http') %} {% set img_src = g.img %} {% elif g.img %}
+        {% set img_src =
+        "https://wpbmixpiydtbrgcentrt.supabase.co/storage/v1/object/public/strumify-products/"
+        ~ g.img %} {% else %} {% set img_src = '' %} {% endif %} {% if img_src
+        %}
         <img
           src="{{ img_src }}"
           alt="{{ g.name }}"

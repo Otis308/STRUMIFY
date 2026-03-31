@@ -36,21 +36,48 @@ async function handleLogin(e) {
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...'; }
   
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { showToast('⚠ ' + (error.detail || 'Sai tài khoản hoặc mật khẩu!')); return; }
+    // 1. Gửi request đăng nhập lên Backend của bạn
+    const response = await fetch('/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ 
+            email: email, 
+            password: password 
+        })
+    });
+
+    // 2. Chuyển kết quả trả về thành dạng JSON
+    const data = await response.json();
+
+    // 3. Kiểm tra xem đăng nhập có thành công không
+    if (!response.ok) {
+        // Nếu API báo lỗi (VD: sai mật khẩu, tài khoản không tồn tại)
+        console.error("Lỗi từ server:", data.detail || "Đăng nhập thất bại");
+        alert("Đăng nhập thất bại: " + (data.detail || "Vui lòng kiểm tra lại thông tin."));
+        return; // Dừng lại, không chạy tiếp
+    }
+
+    // 4. Nếu thành công -> Lưu Token vào trình duyệt
+    // Giả sử API của bạn trả về { "access_token": "chuỗi_token_dài_ngoằng", "token_type": "bearer" }
+    localStorage.setItem('access_token', data.access_token);
     
-    localStorage.setItem('access_token', data.session.access_token);
+    // (Tùy chọn) Lưu thêm thông tin user nếu backend có trả về
+    if (data.user) {
+        localStorage.setItem('user_info', JSON.stringify(data.user));
+    }
+
+    console.log("Đăng nhập thành công!");
     
-    // Hợp nhất giỏ hàng Guest -> Account
-    await cartSync.mergeLocalCartIntoDatabaseCart();
-    
-    showToast('🔑 Đăng nhập thành công!');
-    setTimeout(() => { window.location.href = '/order'; }, 1000);
-  } catch(err) { 
-    console.error(err); showToast('⚠ Lỗi kết nối máy chủ!'); 
-  } finally { 
-    if(btn) { btn.disabled = false; btn.innerHTML = '🔑 Đăng nhập ngay'; } 
-  }
+    // 5. Cập nhật lại giao diện hoặc chuyển trang
+    // Ví dụ: tải lại trang profile hoặc ẩn form đăng nhập
+    window.location.reload(); 
+
+} catch (error) {
+    console.error("Lỗi kết nối mạng hoặc server:", error);
+    alert("Không thể kết nối đến máy chủ.");
+}
 }
 
 async function handleRegister(e) {
@@ -338,7 +365,7 @@ function renderMembership(u) {
 
 // Global scope Modal
 window.openModal = function(id) { setText('tlOrderId', id); document.getElementById('timelineModal')?.classList.add('open'); document.body.style.overflow = 'hidden'; }
-window.closeModal = function()  { document.getElementById('timelineModal')?.classList.remove('open'); document.body.style.overflow = ''; }
+window.closeProfileModal = function()  { document.getElementById('timelineModal')?.classList.remove('open'); document.body.style.overflow = ''; }
 window.saveProfile = saveProfile;
 window.logout = handleLogout;
 /* ================================================================

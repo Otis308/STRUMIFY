@@ -1,31 +1,24 @@
 import uvicorn
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from contextlib import asynccontextmanager
 
-from app.models.user import User
-from app.models.order import Order
-
-# Import các thành phần nội bộ
-from app.database.database import engine, Base
-from app.routers import product, auth 
-from app.routers.auth  import router as auth_router
-from app.routers.order import router as orders_router
-
-from app.routers.auth import router as auth_router
-
-from sqlalchemy.future import select
-from app.models.product import Product
-from app.database.database import get_db
+# ── Import Database & Models (Dùng cho trang /order) ───────────
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from app.database.database import get_db
+from app.models.mod_product import Product
 
-# 1. Quản lý vòng đời ứng dụng (Lifespan)
+# ── Import routers (Đã sửa tên cho khớp với file của bạn) ──────
+from app.routers.rout_auth    import router as auth_router
+from app.routers.rout_product import router as product_router
+from app.routers.rout_order   import router as orders_router
+from app.routers.rout_view    import router as view_router
 
+# ── App Init & Middleware ──────────────────────────────────────
 app = FastAPI(title="Strumify API")
 
-# --- ĐOẠN CODE CẤP PHÉP CORS BẮT BUỘC PHẢI CÓ ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,19 +27,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. Cấu hình Static và Templates
+# ── Static files & Templates ───────────────────────────────────
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
-# 3. Đăng ký các Router
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(product.router, prefix="/products", tags=["Products"])
-app.include_router(auth_router)      
-app.include_router(orders_router) 
+# ── Đăng ký routers ────────────────────────────────────────────
+app.include_router(auth_router,    prefix="/auth",     tags=["Auth"])
+app.include_router(product_router, prefix="/products", tags=["Products"])
+app.include_router(orders_router,                      tags=["Orders"])
+app.include_router(view_router,                        tags=["Pages"])
 
-# 4. Các Route giao diện (Views)
+# ── Misc routes ────────────────────────────────────────────────
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
+
+# ── Giao diện Web (Views) ──────────────────────────────────────
 @app.get("/")
-async def home(request: Request):
+async def home_page(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
 @app.get("/login")
@@ -54,36 +52,35 @@ async def login_page(request: Request):
     return templates.TemplateResponse("register&login.html", {"request": request})
 
 @app.get("/profile")
-async def login_page(request: Request):
+async def profile_page(request: Request): # Đã fix lỗi trùng tên hàm
     return templates.TemplateResponse("profile.html", {"request": request})
 
 @app.get("/cart")
-async def login_page(request: Request):
+async def cart_page(request: Request):    # Đã fix lỗi trùng tên hàm
     return templates.TemplateResponse("cart.html", {"request": request})
 
 @app.get("/order", name="order_page") 
-async def order_page_function(request: Request, db: AsyncSession = Depends(get_db)):
+async def order_page(request: Request, db: AsyncSession = Depends(get_db)):
     query = select(Product)
     result = await db.execute(query)
     guitars = result.scalars().all() 
-    
     return templates.TemplateResponse("order.html", {
         "request": request, 
         "guitars": guitars 
     })
 
 @app.get("/admin")
-async def login_page(request: Request):
+async def admin_page(request: Request):   # Đã fix lỗi trùng tên hàm
     return templates.TemplateResponse("admin.html", {"request": request})
 
 @app.get("/courses", name="course")
-async def get_courses(request: Request):
+async def courses_page(request: Request):
     return templates.TemplateResponse("courses.html", {"request": request})
 
 @app.get("/repair", name="repair")
-async def get_courses(request: Request):
+async def repair_page(request: Request):
     return templates.TemplateResponse("repair.html", {"request": request})
 
-
+# ── Khởi chạy Server ───────────────────────────────────────────
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
