@@ -89,7 +89,7 @@ const COURSE_LIST = [
         time: "1 năm", 
         students: "8 học viên", 
         rate: 5.0, 
-        video: "/static/icons/video_course/thanhnhac_course.mp4" 
+        img: "/static/icons/video_course/thanhnhac_course.jpg" 
     },
     { 
         cat: "Nhạc lí", 
@@ -107,7 +107,7 @@ const COURSE_LIST = [
         time: "6 tháng", 
         students: "20 học viên", 
         rate: 4.8, 
-        video: "/static/icons/video_course/history_course.mp4" 
+        img: "/static/icons/video_course/music_history.jpg" 
     },
     { 
         cat: "Xướng âm", 
@@ -116,7 +116,7 @@ const COURSE_LIST = [
         time: "6 tháng", 
         students: "15 học viên", 
         rate: 4.7, 
-        video: "/static/icons/video_course/chant_course.mp4" 
+        img: "/static/icons/video_course/chant_course.jpg" 
     },
     { 
         cat: "Hòa âm", 
@@ -125,7 +125,7 @@ const COURSE_LIST = [
         time: "1 năm", 
         students: "10 học viên", 
         rate: 5.0, 
-        video: "/static/icons/video_course/hoam_course.mp4" 
+        img: "/static/icons/video_course/hoam_course.jpg" 
     },
     { 
         cat: "Lí luận", 
