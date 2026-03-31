@@ -1,8 +1,4 @@
-"""
-app/routers/views.py – Strumify
-✅ Fix: truyền products từ Supabase vào order.html template
-✅ Fix: clean None values trước khi truyền vào Jinja2
-"""
+
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse

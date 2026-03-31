@@ -890,45 +890,100 @@
 
 /* ================================================================
    RESPONSIVE
+
+/* ================================================================
+   RESPONSIVE — chỉ fix mobile, desktop giữ nguyên 100%
    ================================================================ */
+
+/* ── TABLET RỘNG (≤ 1024px) ── */
 @media (max-width: 1024px) {
+  /* Categories: bỏ bento layout phức tạp, dùng 2 cột đơn giản */
   .categories-grid {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: auto;
-  }
-  .categories-grid .cat-card:nth-child(1),
-  .categories-grid .cat-card:nth-child(3) {
-    grid-column: auto;
-    grid-row: auto;
-  }
-  .stats-inner { grid-template-columns: repeat(2,1fr); }
-}
-
-@media (max-width: 576px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 992px) {
-  .features-grid {
     grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 200px;
   }
+  .categories-grid .cat-card {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+  /* Stats: 2 cột thay vì 4 */
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── TABLET (≤ 992px) ── */
+@media (max-width: 992px) {
+  /* Features: 2 cột thay vì 3 */
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Courses: 2 cột */
+  .courses-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Categories: 2 cột, giữ 2 card đặc biệt full-width */
+  .categories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    grid-auto-rows: auto;  
+  } 
+  .cat-card {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+  .categories-grid .cat-card { grid-column: span 1 !important; grid-row: span 1 !important; }
+  .categories-grid .cat-card:nth-child(1),
+  .categories-grid .cat-card:nth-child(5) { grid-column: span 2 !important; }
+}
+
+/* ── MOBILE (≤ 768px) ── */
 @media (max-width: 768px) {
-  .hero { height: 85vh; }
-  .hero-content h1 { font-size: 4.5rem; }
-  .section { padding: 56px 20px; }
-  .testimonial-card { padding: 28px 24px; }
-  .categories-grid { grid-template-columns: repeat(2,1fr); grid-template-rows: auto; }
-  .categories-grid .cat-card { aspect-ratio: 4/3; }
-  .newsletter-form { flex-direction: column; }
-  .newsletter-input, .btn-newsletter { width: 100%; }
+  .section      { padding: 52px 16px; }
+  .hero         { height: 85vh; min-height: 400px; }
+  .hero-content { padding: 0 16px; }
+
+  /* Categories 2 cột với aspect-ratio */
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
+  }
+  .categories-grid .cat-card             { grid-column: span 1 !important; grid-row: span 1 !important; aspect-ratio: 4/3; }
+  .categories-grid .cat-card:nth-child(1){ grid-column: span 2 !important; }
+
+  /* Courses 1 cột */
+  .courses-grid { grid-template-columns: 1fr; }
+
+  /* Testimonial */
+  .testimonial-card { padding: 28px 20px; }
+
+  /* Newsletter xếp dọc */
+  .newsletter-form    { flex-direction: column; align-items: stretch; }
+  .newsletter-input,
+  .btn-newsletter     { width: 100%; border-radius: 12px; }
+
+  /* Promos 1 cột */
+  .promos-grid { grid-template-columns: 1fr; }
+
+  .stats-inner { padding: 0 16px; }
 }
 
+/* ── MOBILE NHỎ (≤ 480px) ── */
 @media (max-width: 480px) {
-  .hero-content h1 { font-size: 3rem; }
-  .stats-inner { grid-template-columns: repeat(2,1fr); }
-  .categories-grid { grid-template-columns: 1fr; }
+  .section          { padding: 40px 14px; }
+  .hero-content h1  { font-size: 3rem; }
+  /* Buttons hero xếp dọc */
+  .hero-btns              { flex-direction: column; align-items: center; }
+  .btn-hero-primary,
+  .btn-hero-outline       { width: 100%; max-width: 280px; justify-content: center; }
+
+  /* Stats 2 cột */
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+  .stat-item   { padding: 20px 10px; }
+
+  /* Features & Courses 1 cột */
+  .features-grid { grid-template-columns: 1fr; }
+  .courses-grid  { grid-template-columns: 1fr; }
+
+  /* Categories 1 cột */
+  .categories-grid                     { grid-template-columns: 1fr; }
+  .categories-grid .cat-card           { grid-column: span 1 !important; aspect-ratio: 16/9; }
+
+  .testimonial-card { padding: 20px 16px; }
+  .ts-quote         { font-size: 1rem; }
+  .faq-question     { font-size: 14px; padding: 16px 0; }
+  .section-header   { margin-bottom: 32px; }
 }

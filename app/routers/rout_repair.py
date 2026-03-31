@@ -34,14 +34,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # ── Import từ project của bạn ──────────────────────────────────
 from database import get_async_db          # async session factory
-from models.repair import (               # SQLAlchemy models (xem models/repair.py)
+from models.mod_repair import (               # SQLAlchemy models (xem models/repair.py)
     RepairOrder,
     OrderLog,
     Service,
     SparePart,
 )
-from utils.auth import get_current_user, require_admin   # auth helpers của bạn
-from utils.storage import upload_file_to_supabase        # storage helper
+from app.core.security import get_current_user, require_admin
+from app.core.supabase_client import upload_file_to_supabase
 from tasks.notifications import (         # Celery tasks (xem tasks/notifications.py)
     send_booking_confirmation,
     send_status_update_notification,

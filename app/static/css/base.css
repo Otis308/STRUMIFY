@@ -124,7 +124,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .brand-logo-text {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 4rem;
+  font-size: clamp(1.5rem, 5vw, 4rem);
   font-weight: 700;
   color: var(--amber);
   letter-spacing: 0.02em;
@@ -452,27 +452,47 @@ footer {
 /* ================================================================
    RESPONSIVE
    ================================================================ */
+
+/* ================================================================
+   RESPONSIVE — chỉ fix mobile, desktop giữ nguyên 100%
+   ================================================================ */
+
+/* ── TABLET RỘNG (≤ 1024px) ── */
 @media (max-width: 1024px) {
   .navbar { padding: 0 20px; gap: 16px; }
-  .nav-links > li > a {
-    color: var(--ebony); 
-    font-size: 15px;
-    padding: 8px 12px;
-  }
+  .nav-links > li > a { font-size: 14px; padding: 8px 8px; }
   .footer-inner { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 
-@media (max-width: 768px) {
+/* ── TABLET (≤ 992px) — ẩn nav links, hiện hamburger ── */
+@media (max-width: 992px) {
+  /* Đổi layout navbar: hamburger | logo | actions */
   .navbar {
     grid-template-columns: auto 1fr auto;
+    gap: 8px;
     padding: 0 16px;
+    height: var(--nav-h);
   }
 
-  .brand-logo { grid-column: 2; justify-self: center; }
-  .nav-actions { grid-column: 3; }
-
-  .nav-links {
+  /* Ẩn toàn bộ nav links trái và phải */
+  .nav-left,
+  .nav-right-links {
     display: none;
+  }
+
+  .brand-logo  { grid-column: 2; justify-self: center; }
+  .nav-right   { grid-column: 3; gap: 6px; }
+
+  /* Thu nhỏ logo */
+  .brand-logo-img  { height: 46px; }
+  .brand-logo-text { font-size: 2rem; }
+
+  /* Hiện nút hamburger */
+  .mobile-menu-btn { display: flex; }
+
+  /* ── Mobile nav drawer (JS toggle class .active) ── */
+  .nav-left.active {
+    display: flex;
     position: fixed;
     top: var(--nav-h);
     left: 0; right: 0;
@@ -487,9 +507,13 @@ footer {
     max-height: calc(100vh - var(--nav-h));
     overflow-y: auto;
   }
-  .nav-links.active { display: flex; }
-  .nav-links > li > a { padding: 11px 14px; border-radius: 8px; font-size: 15px; }
-  .dropdown-content {
+  .nav-left.active > li > a {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  /* Dropdown trong drawer — static thay vì absolute */
+  .nav-left.active .dropdown-content {
     position: static;
     visibility: visible;
     opacity: 1;
@@ -502,26 +526,32 @@ footer {
     margin: 4px 0 4px 16px;
     padding: 4px;
   }
+  .nav-left.active .dropdown-content li a { color: #3d2b15; font-size: 14px; }
+}
 
-  .nav-links > li > a:hover {
-    color: var(--gold);
-  }
-
-  .dropdown-content li a { color: #3d2b15; font-size: 14px; }
-
-  .mobile-menu-btn { display: flex; }
+/* ── MOBILE (≤ 768px) ── */
+@media (max-width: 768px) {
+  .navbar { padding: 0 12px; }
+  .brand-logo-img  { height: 36px; }
+  .brand-logo-text { font-size: 1.5rem; }
+  .action-btn { width: 40px; height: 40px; font-size: 18px; }
+  .action-btn.btn-login { padding: 0 12px; font-size: 12px; }
+  /* Search box về bên trái màn hình */
+  .moc-wrapper-search { right: auto; left: 0; width: 240px; }
   .footer-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
-}
-@media (max-width: 992px) {
-  .navbar {
-    grid-template-columns: auto 1fr; 
-  }
-  .nav-links {
-    display: none; 
-  }
+  footer { padding: 40px 20px 0; }
 }
 
+/* ── MOBILE NHỎ (≤ 480px) ── */
 @media (max-width: 480px) {
+  .brand-logo-text { font-size: 1.1rem; }
+  .brand-logo-img  { height: 28px; }
+  .brand-logo      { gap: 6px; }
+  /* Ẩn text "Đăng nhập", chỉ giữ icon */
+  .action-btn.btn-login span { display: none; }
+  .action-btn.btn-login      { width: 36px; padding: 0; border-radius: 10px; }
+  /* iOS: font >= 16px không bị zoom khi focus input */
+  input, select, textarea { font-size: 16px !important; }
   .footer-inner { grid-template-columns: 1fr; }
-  .nav-welcome { display: none; }
+  footer        { padding: 32px 16px 0; }
 }

@@ -1,7 +1,18 @@
 /* =============================================
    MỘC – order.css  (brand-consistent, bright, refined)
    ============================================= */
+img { max-width: 100%; height: auto; object-fit: cover; }
+* { box-sizing: border-box; }
 
+/* Grid tự động co giãn */
+.your-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Form không bị zoom trên iOS */
+input, select, textarea { font-size: 16px; }
 /* ── VARIABLES ────────────────────────────────── */
 :root {
   --wood:        #5c3d22;
@@ -132,7 +143,7 @@ html { scroll-padding-top: 80px; }
 /* ── PRODUCTS GRID ────────────────────────────── */
 .products-section {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 22px; margin-bottom: 48px;
 }
 

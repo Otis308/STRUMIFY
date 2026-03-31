@@ -1,3 +1,15 @@
+img { max-width: 100%; height: auto; object-fit: cover; }
+* { box-sizing: border-box; }
+
+/* Grid tự động co giãn */
+.your-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Form không bị zoom trên iOS */
+input, select, textarea { font-size: 16px; }
 :root {
   /* Tông màu Slate hiện đại, dịu mắt hơn */
   --bg:     #111827; 
@@ -76,3 +88,17 @@ tr:hover td { background: rgba(255,255,255,.02); }
 /* TOAST */
 .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg3); padding: 12px 20px; border-radius: var(--r); border-left: 4px solid var(--green); font-weight: 600; transform: translateY(20px); opacity: 0; transition: all 0.3s; z-index: 1000;}
 .toast.show { transform: translateY(0); opacity: 1; }
+
+/* Màn hình Tablet */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
+/* Màn hình Mobile */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr; 
+  }
+}

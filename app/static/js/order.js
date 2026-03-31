@@ -387,7 +387,7 @@ window.openProductModal = function (id) {
   modal.classList.add('active');
 };
 
-window.closeModal = function () {
+window.closeOrderModal = function () {
   document.getElementById('productModal')?.classList.remove('active');
 };
 
