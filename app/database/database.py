@@ -2,12 +2,20 @@ import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from dotenv import load_dotenv
-from pathlib import Path
 
 # Load file .env
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+# --- XỬ LÝ DATABASE URL ĐỂ DÙNG ASYNC DRIVER ---
+if DATABASE_URL:
+    # Nếu URL đang dùng postgres:// hoặc postgresql:// mặc định (thường là psycopg2)
+    # thì chuyển sang dùng postgresql+asyncpg://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 # --- SỬA ĐOẠN NÀY ---
 engine = create_async_engine(
@@ -19,8 +27,8 @@ engine = create_async_engine(
 )
 
 AsyncSessionLocal = async_sessionmaker(
-    bind=engine, 
-    class_=AsyncSession, 
+    bind=engine,
+    class_=AsyncSession,
     expire_on_commit=False
 )
 # --------------------
@@ -36,4 +44,3 @@ async def get_db():
             yield session
         finally:
             await session.close()
-
