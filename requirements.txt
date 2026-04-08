@@ -1,4 +1,4 @@
-﻿# Clean requirements
+# Clean requirements
 aiosmtplib==5.1.0
 aiosqlite==0.22.1
 amqp==5.3.1
