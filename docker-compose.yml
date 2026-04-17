@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Dịch vụ Backend
+  backend:
+    build: . # Build trực tiếp từ Dockerfile bạn đang có
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/guitardb
+      - SECRET_KEY=your_guitar_secret_key
+    depends_on:
+      - db
+      - cache
+    networks:
+      - guitar-network
+
+  # Dịch vụ Database (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=guitardb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - guitar-network
+
+  # Dịch vụ Cache (Redis) - Để lưu giỏ hàng/session
+  cache:
+    image: redis:7-alpine
+    networks:
+      - guitar-network
+
+# Định nghĩa lưu trữ bền vững (không mất dữ liệu khi restart)
+volumes:
+  postgres_data:
+
+# Định nghĩa mạng nội bộ để các container "nói chuyện" được với nhau
+networks:
+  guitar-network:
+    driver: bridge

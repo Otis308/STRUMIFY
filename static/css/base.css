@@ -1,0 +1,597 @@
+/* ================================================================
+   base.css  –  Strumify  (Redesigned)
+   Luxury refined music instrument boutique aesthetic
+   Fonts: Cormorant Garamond (display) + DM Sans (body)
+   ================================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ── CSS VARIABLES ───────────────────────────────────────────────*/
+:root {
+  --ebony:     #14100a;
+  --ebony-2:   #1e1810;
+  --brown:     #5c3a1e;
+  --brown-lt:  #8b5e34;
+  --amber:     #c9922a;
+  --amber-lt:  #e8c46a;
+  --cream:     #fdf5e6;
+  --cream-2:   #f5e8d0;
+  --white:     #ffffff;
+  --gray:      #6b7280;
+  --border:    rgba(201,146,42,.18);
+  --nav-h:     76px;
+  --shadow-sm: 0 2px 12px rgba(0,0,0,.08);
+  --shadow-md: 0 6px 28px rgba(0,0,0,.14);
+  --radius:    10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #2c1f0e;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; }
+a   { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ================================================================
+   NAVBAR  –  clean, sticky, professional
+   ================================================================ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 950;
+  height: 12%;
+  background: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 20px rgba(0,0,0,.07);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.navbar {
+  max-width: 100%; 
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 40px; 
+  display: grid;
+  align-items: center;
+  gap: 5px;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none; 
+  margin: 0;
+  padding: 0;
+}
+
+.nav-menu > li > a {
+  color: var(--ebony);
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 8px 6px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-menu > li > a:hover {
+  background: var(--cream-2);
+  color: var(--amber);
+}
+
+/* Cột giữa: Đảm bảo menu luôn ở giữa cột của nó */
+.nav-center {
+  justify-self: center;
+}
+
+/* Cột phải: Đẩy toàn bộ nội dung sang sát mép phải */
+.nav-right {
+  grid-column: 3;
+  display: flex;      
+  align-items: center;
+  gap: 84px;           
+}
+.nav-left {
+  grid-column: 1;
+  justify-self: start; 
+} 
+
+/* ── Logo (center) ── */
+.brand-logo {
+  grid-column: 2;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.brand-logo-img { height: 100px; width: auto; }
+
+.brand-logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 5vw, 4rem);
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* ── Nav Links (left) ── */
+.nav-links {
+  grid-column: 1;
+  justify-self: start; /* Đẩy các mục menu bám sát lề trái */
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+}
+
+.nav-links > li > a {
+  color: var(--ebony); 
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-links > li > a:hover {
+  background: var(--cream-2);
+  color: var(--amber); 
+}
+
+.nav-links > li > a.active {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+/* ── Dropdown ── */
+.dropdown { position: relative; }
+
+.dropdown-content {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: var(--ebony);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.22);
+  border-top: 2px solid var(--amber);
+  list-style: none;
+  z-index: 999;
+  transition: opacity .2s ease, transform .2s ease;
+  transform: translateY(4px);
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-content li a {
+  display: block;
+  padding: 9px 14px;
+  color: #d4c4b0;
+  font-size: 13.5px;
+  font-weight: 400;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+
+.dropdown-content li a:hover {
+  background: rgba(255,255,255,.07);
+  color: var(--amber-lt);
+}
+
+.chevron-icon {
+  font-size: 10px;
+  opacity: .6;
+  transition: transform .2s;
+}
+.dropdown:hover .chevron-icon { transform: rotate(180deg); }
+
+/* ── Nav Actions (right) ── */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-btn:not(.btn-login) {
+  color: var(--ebony);
+}
+.action-btn:not(.btn-login):hover {
+  color: var(--amber);
+}
+.moc-btn-search {
+  color: var(--ebony);
+}
+.moc-btn-search:hover {
+  color: var(--amber);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 55px;
+  height: 55px;
+  border-radius: 10px;
+  background: none;
+  border: none;
+  color: #ae5511;
+  font-size: 24px;
+  transition: background .18s, color .18s, transform .18s;
+  position: relative;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background: var(--cream-2);
+  color: var(--amber);
+  transform: translateY(-1px);
+}
+
+.action-btn.btn-login {
+  background: var(--amber);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  width: auto;
+  padding: 0 14px;
+  gap: 6px;
+  border-radius: 20px;
+}
+.action-btn.btn-login:hover {
+  background: var(--brown);
+  color: var(--amber-lt);
+  transform: translateY(-1px);
+}
+
+.action-btn.btn-admin {
+  color: #e74c3c;
+}
+.action-btn.btn-admin:hover {
+  background: #fde8e8;
+  color: #c0392b;
+}
+.action-btn.btn-logout:hover {
+  background: #fde8e8;
+  color: #c0392b;
+}
+
+.cart-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 17px;
+  height: 17px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 20px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+
+/* ── Search ── */
+.moc-search-container { position: relative; }
+.moc-btn-search {
+  display: flex;font-size: 17px; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px;
+  background: none; border: none; color: #ae5511;
+  transition: background .18s, color .18s;
+}
+.moc-btn-search:hover { background: var(--cream-2); color: var(--amber); }
+.moc-btn-search svg   { display: block; }
+
+.moc-wrapper-search {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 10px;
+  border: 1px solid var(--border);
+}
+.moc-wrapper-search.active { display: block; }
+.moc-input-search {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  color: #333;
+  background: var(--cream);
+}
+.moc-input-search:focus { border-color: var(--amber); background: #fff; }
+
+/* ── Mobile Menu Button ── */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3d2b15;
+  font-size: 20px;
+  padding: 8px;
+  border-radius: 8px;
+}
+.mobile-menu-btn:hover { background: var(--cream-2); }
+
+/* ── Navbar Menu ── */
+
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+footer {
+  background: var(--ebony);
+  color: #b0a090;
+  padding: 56px 32px 0;
+  font-size: 14px;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.footer-brand .brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--amber-lt);
+  letter-spacing: .08em;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.footer-brand p {
+  line-height: 1.7;
+  max-width: 280px;
+  color: #8a7a6a;
+}
+
+.footer-col h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: .06em;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: 9px; }
+.footer-col ul li a {
+  color: #8a7a6a;
+  font-size: 13.5px;
+  transition: color .18s;
+}
+.footer-col ul li a:hover { color: var(--amber-lt); }
+
+.footer-contact li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: #8a7a6a;
+  font-size: 13.5px;
+}
+.footer-contact li i {
+  color: var(--amber);
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 14px;
+}
+
+.social-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.social-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background .2s, transform .2s;
+}
+.social-icon:hover { background: var(--amber); color: #fff; transform: translateY(-3px); }
+.social-icon.facebook { color: #1877F2; }
+.social-icon.instagram { color: #E4405F; }
+.social-icon.youtube   { color: #FF0000; }
+.social-icon.tiktok    { color: #d4c4b0; }
+
+.footer-bottom {
+  text-align: center;
+  padding: 18px 0;
+  color: #5a4a3a;
+  font-size: 13px;
+}
+
+/* ================================================================
+   RESPONSIVE - STRUMIFY REDESIGNED
+   ================================================================ */
+
+/* ── [TẦNG 1]: CẤU HÌNH CHUNG (Áp dụng cho mọi màn hình, kể cả PC Full màn) ── */
+/* Mặc định: Phải ẩn toàn bộ các thành phần của Mobile trên bản Desktop */
+.mobile-menu-btn {
+  display: none !important;
+}
+
+.mobile-nav-menu {
+  display: none !important; /* Lệnh này giúp Menu dọc biến mất hoàn toàn trên PC */
+}
+
+/* ── [TẦNG 2]: TABLET & MOBILE (≤ 992px) ── */
+/* Đây là nơi "phép thuật" Hamburger bắt đầu hoạt động */
+@media (max-width: 992px) {
+  .navbar {
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding: 0 16px;
+    height: var(--nav-h);
+  }
+
+  /* 1. Ẩn các menu dàn hàng ngang của bản Desktop */
+  .nav-left, 
+  .nav-right-links {
+    display: none !important;
+  }
+
+  /* 2. Hiện nút Hamburger */
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--ebony);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  /* 3. Cấu hình khung Menu Mobile (Nền trắng, chữ đen) */
+  .mobile-nav-menu {
+    /* Gỡ bỏ lệnh ẩn của PC nhưng vẫn giữ ẩn cho đến khi click */
+    display: none !important; 
+    
+    flex-direction: column;
+    position: absolute;
+    top: 100%; /* Hít sát đáy Header */
+    left: 0;
+    width: 100%;
+    background-color: #ffffff; /* Nền trắng sạch sẽ */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    z-index: 9999;
+    padding: 10px 0;
+    max-height: calc(100vh - var(--nav-h));
+    overflow-y: auto;
+  }
+
+  /* 4. KHI CLICK (JS thêm class .active) -> HIỆN MENU */
+  .mobile-nav-menu.active {
+    display: flex !important;
+  }
+
+  /* 5. Định dạng link trong menu mobile */
+  .mobile-nav-menu a {
+    padding: 16px 24px;
+    color: #1a1a1a !important;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #f2f2f2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+  }
+
+  .mobile-nav-menu a:hover {
+    background: var(--cream);
+    color: var(--amber) !important;
+  }
+
+  /* 6. Xử lý Dropdown con trong Mobile */
+  .mobile-sub-menu {
+    display: none; 
+    background-color: #fafafa;
+  }
+  
+  .mobile-sub-menu.open {
+    display: block; /* Hiện khi click vào mục cha */
+  }
+
+  .mobile-sub-menu a {
+    padding: 12px 24px 12px 45px; /* Thụt lề vào trong */
+    font-size: 14.5px;
+    color: #555 !important;
+    border-bottom: none;
+  }
+
+  /* Xoay mũi tên khi mở dropdown */
+  .mobile-dropdown-toggle.open i {
+    transform: rotate(180deg);
+  }
+
+  /* Thu nhỏ logo một chút */
+  .brand-logo-img  { height: 42px; }
+  .brand-logo-text { font-size: 1.8rem; }
+  .nav-right { gap: 8px; }
+}
+
+/* ── [TẦNG 3]: MOBILE CHUẨN (≤ 768px) ── */
+@media (max-width: 768px) {
+  .navbar { padding: 0 12px; }
+  .brand-logo-img  { height: 36px; }
+  .brand-logo-text { font-size: 1.5rem; }
+  
+  /* Căn chỉnh lại các nút hành động bên phải */
+  .action-btn { width: 40px; height: 40px; font-size: 18px; }
+  .action-btn.btn-login { padding: 0 12px; font-size: 12px; }
+  
+  /* Ô tìm kiếm tràn rộng hơn trên mobile */
+  .moc-wrapper-search { right: auto; left: 0; width: 260px; }
+  
+  /* Footer dàn hàng */
+  .footer-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+
+/* ── [TẦNG 4]: MOBILE NHỎ (≤ 480px) ── */
+@media (max-width: 480px) {
+  .brand-logo-text { font-size: 1.2rem; }
+  .brand-logo-img  { height: 30px; }
+  
+  /* Ẩn chữ "Đăng nhập", chỉ giữ icon để tránh tràn hàng */
+  .action-btn.btn-login span { display: none; }
+  .action-btn.btn-login { width: 40px; padding: 0; border-radius: 10px; }
+  
+  .footer-inner { grid-template-columns: 1fr; }
+  footer { padding: 32px 16px 0; }
+}

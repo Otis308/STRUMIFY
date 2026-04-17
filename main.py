@@ -1,23 +1,59 @@
 import uvicorn
-from fastapi import FastAPI, Request, Depends, Response
+from src.interfaces.api.v1.routers.rout_view import router as view_router
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+from supabase import create_client
+import os
+import requests
+from openai import OpenAI
+from google import genai
 
-# ── Import Database & Models (Dùng cho trang /order) ───────────
+
+# ── Import Database & Models (/order) ───────────
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.database.database import get_db
-from app.models.mod_product import Product
+from src.infrastructure.database.database import get_db
+from src.infrastructure.database.models.product import Product 
+from src.modules.order_management.presentation.routes import router as order_router
 
-# ── Import routers (Đã sửa tên cho khớp với file của bạn) ──────
-from app.routers.rout_auth    import router as auth_router
-from app.routers.rout_product import router as product_router
-from app.routers.rout_order   import router as orders_router
-from app.routers.rout_view    import router as view_router
+# ── Import routers  ──────
+from src.interfaces.api.v1.routers.rout_auth        import router as auth_router
+from src.interfaces.api.v1.routers.rout_product     import router as product_router
+from src.interfaces.api.v1.routers.rout_order       import router as orders_router
+from src.interfaces.api.v1.routers.rout_view        import router as view_router
+from src.interfaces.api.v1.routers.rout_chat        import router as chat_router
+from src.interfaces.api.v1.routers.rout_cart        import router as cart_router
+from src.interfaces.api.v1.routers.rout_order       import router as order_router
+from src.interfaces.api.v1.routers.rout_profile     import router as profile_router
+from src.interfaces.api.v1.routers.rout_cart        import router as cart_router
+from src.interfaces.api.v1.routers.rout_order       import router as order_router
 
-# ── App Init & Middleware ──────────────────────────────────────
+# ── App Init & Middleware ──
 app = FastAPI(title="Strumify API")
+#app.include_router(view_router, tags=["Pages"])
+app.include_router(chat_router)
+app.include_router(cart_router)  
+app.include_router(order_router) 
+app.include_router(profile_router)  
+app.include_router(cart_router)     
+app.include_router(order_router)     
+
+def ask_gemini(user_message):
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=YOUR_API_KEY"
+
+    body = {
+        "contents": [{
+            "parts": [{"text": f"Bạn là chuyên gia bán đàn guitar. Tư vấn ngắn gọn.\nUser: {user_message}"}]
+        }]
+    }
+
+    res = requests.post(url, json=body)
+    data = res.json()
+
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,11 +64,12 @@ app.add_middleware(
 )
 
 # ── Static files & Templates ───────────────────────────────────
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="src/interfaces/web/templates")
+class ChatRequest(BaseModel):
+    message: str
 # ── Đăng ký routers ────────────────────────────────────────────
-app.include_router(auth_router,    prefix="/auth",     tags=["Auth"])
+app.include_router(auth_router,    tags=["Auth"])
 app.include_router(product_router, prefix="/products", tags=["Products"])
 app.include_router(orders_router,                      tags=["Orders"])
 app.include_router(view_router,                        tags=["Pages"])
@@ -42,45 +79,60 @@ app.include_router(view_router,                        tags=["Pages"])
 async def favicon():
     return Response(status_code=204)
 
-# ── Giao diện Web (Views) ──────────────────────────────────────
-@app.get("/")
-async def home_page(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+# ===== CONFIG SUPABASE =====
+client = genai.Client(api_key="GOOGLE_API_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-@app.get("/login")
-async def login_page(request: Request):
-    return templates.TemplateResponse("register&login.html", {"request": request})
+# ===== CONFIG GG GEMINI =====
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+client = genai.Client(api_key=GOOGLE_API_KEY)
+class ChatRequest(BaseModel):
+    message: str
 
-@app.get("/profile")
-async def profile_page(request: Request): # Đã fix lỗi trùng tên hàm
-    return templates.TemplateResponse("profile.html", {"request": request})
+def get_products():
+    try:
+        # Sử dụng client 'supabase' đã khởi tạo từ .env ở phần đầu file
+        res = supabase.table("products").select("*").execute()
+        return res.data or []
+    except Exception as e:
+        print(f"Lỗi truy vấn Supabase: {e}")
+        return []
+    
+@app.post("/chat")
+async def chat(req: ChatRequest):
+    all_products = get_products()
+    
+    catalog_text = ""
+    for p in all_products:
+        catalog_text += f"- {p.get('name')}: {p.get('price')}đ. Đặc điểm: {p.get('tags')}\n"
 
-@app.get("/cart")
-async def cart_page(request: Request):    # Đã fix lỗi trùng tên hàm
-    return templates.TemplateResponse("cart.html", {"request": request})
+    prompt = f"""
+Bạn là Hopper - chuyên gia tư vấn nhạc cụ của STRUMIFY. 
+Sản phẩm cửa hàng:
+{catalog_text}
 
-@app.get("/order", name="order_page") 
-async def order_page(request: Request, db: AsyncSession = Depends(get_db)):
-    query = select(Product)
-    result = await db.execute(query)
-    guitars = result.scalars().all() 
-    return templates.TemplateResponse("order.html", {
-        "request": request, 
-        "guitars": guitars 
-    })
+Khách hỏi: "{req.message}"
+Nhiệm vụ: Phân tích nhu cầu, chọn 1-2 cây đàn phù hợp nhất, tư vấn thân thiện và chốt sale.
+Yêu cầu: Trả lời ngắn gọn bằng tiếng Việt, xuống dòng dễ đọc.
+"""
 
-@app.get("/admin")
-async def admin_page(request: Request):   # Đã fix lỗi trùng tên hàm
-    return templates.TemplateResponse("admin.html", {"request": request})
+    try:
+        # Sử dụng generate_content với cấu hình an toàn
+        response = client.models.generate_content(
+            model='gemini-2.0-flash', 
+            contents='Hãy viết cho tôi mô tả của một cây đàn guitar acoustic.'
+        )
+        print(response.text)
+        
+        # Kiểm tra nếu response có nội dung (tránh lỗi block content)
+        if response.text:
+            return {"reply": response.text}
+        else:
+            return {"reply": "Hopper đang suy nghĩ một chút, bạn hỏi lại câu khác nhé!"}
 
-@app.get("/courses", name="course")
-async def courses_page(request: Request):
-    return templates.TemplateResponse("courses.html", {"request": request})
-
-@app.get("/repair", name="repair")
-async def repair_page(request: Request):
-    return templates.TemplateResponse("repair.html", {"request": request})
-
-# ── Khởi chạy Server ───────────────────────────────────────────
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    except Exception as e:
+        print(f"Lỗi Gemini: {e}")
+        # Nếu vẫn lỗi 404, thử fallback về model ổn định nhất
+        return {"reply": "Hopper hơi bận chỉnh dây đàn, bạn chờ mình vài giây nhé!"}
