@@ -10,6 +10,9 @@ import os
 import requests
 from openai import OpenAI
 from google import genai
+from pathlib import Path
+
+
 
 
 # ── Import Database & Models (/order) ───────────
@@ -33,6 +36,14 @@ from src.interfaces.api.v1.routers.rout_order       import router as order_route
 
 # ── App Init & Middleware ──
 app = FastAPI(title="Strumify API")
+
+BASE_DIR = Path(__file__).resolve().parent
+
+# Chỉ mount static nếu thư mục tồn tại
+static_dir = BASE_DIR / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    
 #app.include_router(view_router, tags=["Pages"])
 app.include_router(chat_router)
 app.include_router(cart_router)  
