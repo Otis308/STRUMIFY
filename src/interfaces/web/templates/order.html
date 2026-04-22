@@ -89,138 +89,64 @@
 
   <!-- ── PRODUCTS GRID ── -->
   <div class="products-section" id="productsSection">
-    {% if guitars %} {% for g in guitars %} {# Chọn ảnh linh vật tương ứng danh
-    mục #} {% set mascot_file = MASCOT.get(g.cat, '') %}
+    {% if guitars %} {% for product in products %}
+    <div
+      class="product-card"
+      data-id="{{ product.id }}"
+      data-category="{{ product.cat }}"
+    >
+      <div class="mascot-corner">
+        {% if MASCOT[product.cat] %}
+        <img
+          class="mascot-img"
+          src="{{ url_for('static', path='icons/mascot/' + MASCOT[product.cat]) }}"
+          alt="Mascot"
+        />
+        {% else %}
+        <img
+          class="mascot-img"
+          src="{{ url_for('static', path='icons/mascot/guitar.png') }}"
+          alt="Mascot"
+        />
+        {% endif %}
+      </div>
 
-    <div class="product-card" data-id="{{ g.id }}" data-category="{{ g.cat }}">
-      <!-- Ảnh sản phẩm + nút thêm giỏ -->
-      <div class="product-image">
-        {# ---------- Ảnh linh vật hải lí (góc trên-phải) ---------- #} {% if
-        mascot_file %}
-        <div class="mascot-corner">
+      <div class="product-image-container">
+        <div class="product-image">
           <img
-            src="{{ url_for('static', path='/icons/nm/' + mascot_file) }}"
-            alt="Linh vật {{ g.cat }}"
-            class="mascot-img"
+            src="{{ product.image_url }}"
+            alt="{{ product.name }}"
             loading="lazy"
           />
         </div>
-        {% endif %} {# ---------- Ảnh chính của sản phẩm ---------- #} {# Ưu
-        tiên image_url (đã là full URL từ Supabase), fallback sang img #} {% if
-        g.image_url %} {% set img_src = g.image_url %} {% elif g.img and
-        g.img.startswith('http') %} {% set img_src = g.img %} {% elif g.img %}
-        {% set img_src =
-        "https://wpbmixpiydtbrgcentrt.supabase.co/storage/v1/object/public/strumify-products/"
-        ~ g.img %} {% else %} {% set img_src = '' %} {% endif %} {% if img_src
-        %}
-        <img
-          src="{{ img_src }}"
-          alt="{{ g.name }}"
-          loading="lazy"
-          onerror="
-            this.onerror = null;
-            this.style.display = 'none';
-            this.nextElementSibling.style.display = 'flex';
-          "
-        />
-        <div class="img-placeholder" style="display: none">
-          <i class="fa-solid fa-guitar"></i>
-        </div>
-        {% else %}
-        <div class="img-placeholder">
-          <i class="fa-solid fa-guitar"></i>
-        </div>
-        {% endif %} {#
-        ============================================================ BADGE LOGIC
-        – thay thế đoạn {% if g.badge %} cũ trong card Ưu tiên: SALE > HOT > NEW
-        > LIMITED (chỉ hiện 1 badge)
-        ============================================================ #} {# Tính
-        % giảm giá nếu có #} {% set orig_p = g.orig | default(0) | int %} {% set
-        cur_p = g.price | default(0) | int %} {% set pct = (((orig_p - cur_p) /
-        orig_p * 100) | round | int) if orig_p > cur_p else 0 %} {# Điều kiện
-        từng loại #} {% set is_sale = orig_p > cur_p %} {% set is_hot =
-        (g.reviews | default(0) | int) >= 50 and (g.rating | default(0) | float)
-        >= 4.3 %} {% set is_new = g.badge | default('') | lower == 'new' %} {%
-        set is_limited = g.badge | default('') | lower in ['limited', 'giới
-        hạn'] %} {% if is_sale %}
-        <span class="product-badge badge-sale">
-          <i class="fa-solid fa-bolt"></i>
-          −{{ pct }}%
-        </span>
-
-        {% elif is_hot %}
-        <span class="product-badge badge-hot">
-          <i class="fa-solid fa-fire"></i>
-          Bán chạy
-        </span>
-
-        {% elif is_new %}
-        <span class="product-badge badge-new">
-          <i class="fa-solid fa-sparkles"></i>
-          Mới về
-        </span>
-
-        {% elif is_limited %}
-        <span class="product-badge badge-limited">
-          <i class="fa-solid fa-hourglass-half"></i>
-          Giới hạn
-        </span>
-        {% endif %}
-
-        <!-- Nút thêm vào giỏ nổi lên khi hover -->
         <button
           class="add-to-cart-btn"
-          data-add-to-cart
-          data-product-id="{{ product.id }}"
-          data-product-name="{{ product.name }}"
-          data-price="{{ product.price }}"
-          data-image-url="{{ product.image_url }}"
+          title="Thêm vào giỏ"
+          onclick="addToCart({{ product.id }}, {{ product.price }})"
         >
-          <i class="fa-solid fa-plus"></i> Thêm vào giỏ
+          <i class="fa-solid fa-plus"></i>
         </button>
       </div>
 
-      <!-- Thông tin sản phẩm -->
       <div class="product-info">
-        <h3 class="product-name">{{ g.name }}</h3>
-
-        <div class="product-rating">
-          {% set current_rating = g.rating | default(0) | float %} {% if
-          current_rating > 0 %} {% set full = current_rating | int %} {% set
-          half = 1 if (current_rating - full) >= 0.5 else 0 %} {% set empty = (5
-          - full - half) | int %}
-          <span class="stars">
-            {% for i in range(full) %}<i class="fa-solid fa-star"></i>{% endfor
-            %} {% if half == 1 %}<i class="fa-solid fa-star-half-stroke"></i>{%
-            endif %} {% for i in range(empty) %}<i
-              class="fa-regular fa-star"
-            ></i
-            >{% endfor %}
-          </span>
-          <span class="rating-num">{{ "%.1f"|format(current_rating) }}</span>
-          {% if g.reviews and g.reviews > 0 %}
-          <span class="rating-count">({{ g.reviews }})</span>
-          {% endif %} {% else %}
-          <span class="no-rating">Chưa có đánh giá</span>
-          {% endif %}
-        </div>
-
+        <p class="product-category">{{ product.cat or 'Nhạc cụ' }}</p>
+        <h3 class="product-name" onclick="openProductModal({{ product.id }})">
+          {{ product.name }}
+        </h3>
         <div class="product-price-row">
-          <p class="product-price">
-            {{ "{:,.0f}".format(g.price | default(0) | int) }}₫
-          </p>
-          {% set orig_price = g.orig | default(0) | int %} {% set cur_price =
-          g.price | default(0) | int %} {% if orig_price > cur_price %}
-          <p class="product-orig">{{ "{:,.0f}".format(orig_price) }}₫</p>
+          <p class="product-price">{{ "{:,.0f}".format(product.price) }}₫</p>
+          {% if product.orig and product.orig > product.price %}
+          <p class="product-orig">{{ "{:,.0f}".format(product.orig) }}₫</p>
           {% endif %}
         </div>
-
-        <button class="view-detail-btn" onclick="openProductModal({{ g.id }})">
+        <button
+          class="view-detail-btn"
+          onclick="openProductModal({{ product.id }})"
+        >
           <i class="fa-solid fa-eye"></i> Xem chi tiết
         </button>
       </div>
     </div>
-
     {% endfor %} {% else %}
     <div class="no-products">
       <i class="fa-solid fa-box-open"></i>
@@ -232,19 +158,10 @@
   <!-- ── PRODUCT DETAIL MODAL ── -->
   <div
     id="productModal"
-    class="modal-overlay"
     onclick="handleModalOverlayClick(event)"
+    style="display: none"
   >
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2><i class="fa-solid fa-circle-info"></i> Chi tiết sản phẩm</h2>
-        <button class="modal-close" onclick="closeModal()">✕</button>
-      </div>
-
-      <div id="modalBody">
-        <div class="wishlist-btn" onclick="toggleWishlist(this)">❤️</div>
-      </div>
-    </div>
+    <div id="modalBody"></div>
   </div>
 
   <!-- ── CHECKOUT MODAL ── -->
@@ -421,35 +338,13 @@
 
 <!-- PRODUCT_DATA: dùng bởi order.js (addToCart, openProductModal) -->
 <script>
-  const PRODUCT_DATA = [
-    {% for g in guitars %}
-    {
-      id:          {{ g.id | default('null') }},
-      name:        {{ g.name        | default('') | tojson }},
-      description: {{ g.description | default('') | tojson }},
-      category:    {{ g.cat         | default('') | tojson }},
-      price:       {{ g.price       | default(0)  | int }},
-      orig:        {{ g.orig        | default(0)  | int }},
-      raw_img:     {{ g.img         | default('') | tojson }},
-      rating:      {{ g.rating      | default(0)  | float }},
-      reviews:     {{ g.reviews     | default(0)  | int }},
-      specs:       {{ g.specs       | default({}) | tojson }}
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
-  ].map(p => {
-    if (p.raw_img) {
-      p.image_url = p.raw_img.startsWith('http')
-        ? p.raw_img
-        : (typeof SUPABASE_URL !== 'undefined' && typeof BUCKET_NAME !== 'undefined'
-            ? SUPABASE_URL + BUCKET_NAME + '/' + encodeURIComponent(p.raw_img)
-            : p.raw_img);
-    } else {
-      p.image_url = '';
-    }
-    return p;
-  });
+  const PRODUCT_DATA = {{ products | tojson | safe }};
+
+  console.log("Đã tải " + PRODUCT_DATA.length + " sản phẩm.");
 </script>
+<script src="{{ url_for('static', path='js/order.js') }}"></script>
 
 {% endblock %} {% block custom_js %}
 <script src="{{ url_for('static', path='js/sidebar-cart.js') }}"></script>
+<script src="{{ url_for('static', path='js/order.js') }}"></script>
 {% endblock %}

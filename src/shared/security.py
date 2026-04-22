@@ -1,6 +1,7 @@
+# src/shared/security.py
+
 """
-app/core/security.py
-JWT + bcrypt password hashing + FastAPI dependency get_current_user
+Security - Password hashing với Argon2 (OWASP recommended)
 """
 import os
 from datetime import datetime, timedelta, timezone
@@ -15,22 +16,42 @@ from src.shared.supabase_client import supabase
 # ── CONFIG ────────────────────────────────────────────────────────
 JWT_SECRET = os.getenv("JWT_SECRET", "")
 if not JWT_SECRET:
-    raise RuntimeError("❌ Thiếu JWT_SECRET trong .env (cần ít nhất 32 ký tự ngẫu nhiên)")
+    raise RuntimeError("❌ Thiếu JWT_SECRET trong .env")
 
 JWT_ALG    = "HS256"
 TOKEN_DAYS = 7
 
-# ── PASSWORD ──────────────────────────────────────────────────────
-pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ── PASSWORD - Argon2 (OWASP Recommended) ─────────────────────────
+# ✅ Argon2 không có giới hạn 72 bytes
+# ✅ An toàn hơn BCrypt
+pwd_ctx = CryptContext(
+    schemes=["argon2"],
+    deprecated="auto"
+)
 
 def hash_password(plain: str) -> str:
-    return pwd_ctx.hash(plain)
+    """Hash password dùng Argon2 - không giới hạn độ dài"""
+    if not plain:
+        return ""
+    try:
+        return pwd_ctx.hash(plain)
+    except Exception as e:
+        print(f"❌ Lỗi hash password: {e}")
+        raise
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_ctx.verify(plain_password, hashed_password)
+    """Verify password"""
+    if not plain_password or not hashed_password:
+        return False
+    try:
+        return pwd_ctx.verify(plain_password, hashed_password)
+    except Exception as e:
+        print(f"❌ Lỗi verify password: {e}")
+        return False
 
 def get_password_hash(password: str) -> str:
-    return pwd_ctx.hash(password)
+    """Alias"""
+    return hash_password(password)
 
 # ── JWT ───────────────────────────────────────────────────────────
 def create_token(payload: dict) -> str:
@@ -41,7 +62,7 @@ def create_token(payload: dict) -> str:
 def decode_token(token: str) -> dict:
     return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
 
-# ── DEPENDENCY: lấy user từ JWT Bearer token ─────────────────────
+# ── DEPENDENCY ────────────────────────────────────────────────────
 bearer = HTTPBearer(auto_error=False)
 
 async def get_current_user(
@@ -72,29 +93,3 @@ async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Bạn không có quyền admin.")
     return current_user
-
-# ── LOGIN USER ─────────────────────
-def login_user(email_nhap_vao: str, password_nhap_vao: str):
-    
-    # 1. TÌM USER TRONG DATABASE BẰNG EMAIL
-    response = supabase.table("users").select("*").eq("email", email_nhap_vao).execute()
-    users_list = response.data
-    
-    if not users_list:
-        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không đúng")
-        
-    user = users_list[0] 
-    
-    # 2. KIỂM TRA MẬT KHẨU
-    # Lấy cái password_hash từ database ra
-    db_password_hash = user.get("password_hash")
-    
-    # Bỏ vào máy quét để so sánh
-    is_correct = verify_password(password_nhap_vao, db_password_hash)
-    
-    if not is_correct:
-        # Mật khẩu sai
-        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không đúng")
-        
-    # Tiến hành tạo Token hoặc trả về thông tin user
-    return {"message": "Đăng nhập thành công!", "user_id": user.get("id")}

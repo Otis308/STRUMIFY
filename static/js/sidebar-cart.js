@@ -1,344 +1,426 @@
 'use strict';
 
-class CartSidebar {
-  constructor() {
-    this.cart = [];
-    this.isOpen = false;
-    this.isLoggedIn = false;
-    this.apiBase = '';
-    this.storageKey = 'strumify_cart';
-    this.init();
-  }
+if (typeof window.CartSidebar === 'undefined') {
 
-  init() {
-    // 1. Detect logged in status
-    this.checkLoginStatus();
-
-    // 2. Load from localStorage (fallback)
-    this.loadFromLocalStorage();
-    this.updateBadge();
-
-    // 3. Nếu login, fetch từ API (override local cart)
-    if (this.isLoggedIn) {
-      this.fetchFromAPI();
-    }
-
-    // 4. Render sidebar
-    this.renderSidebar();
-
-    // 5. Event listeners
-    //this.attachEventListeners();
-  }
-
-  /* ── EVENT LISTENERS ─────────────────────────────────────────── */
-  attachEventListeners() {
-  }
-
-  /* ── CHECK LOGIN STATUS ──────────────────────────────────────── */
-  checkLoginStatus() {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+  class CartSidebar {
+    constructor() {
+      this.cart       = [];
+      this.isOpen     = false;
       this.isLoggedIn = false;
-      return;
+      this.apiBase    = 'http://127.0.0.1:8000'; 
+      this.storageKey = 'strumify_cart';
+      this.init();
     }
 
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      this.isLoggedIn = payload.exp * 1000 > Date.now();
-    } catch {
-      this.isLoggedIn = false;
+    /* ── INIT ─────────────────────────────────────────────────────*/
+    init() {
+      this.checkLoginStatus();
+      this.loadFromLocalStorage();
+      this.updateBadge();
+
+      if (this.isLoggedIn) {
+        this.fetchFromAPI().then(() => {
+          this.updateBadge();
+          this.renderSidebar();
+        });
+      } else {
+        this.renderSidebar();
+      }
     }
-  }
 
-  /* ── LOAD FROM LOCALSTORAGE ──────────────────────────────────── */
-  loadFromLocalStorage() {
-    try {
-      this.cart = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-      // Normalize field names
-      this.cart = this.cart.map(item => ({
-        product_id:   item.product_id || item.id,
-        product_name: item.product_name || item.name || '',
-        price:        item.price || 0,
-        image_url:    item.image_url || item.img || '',
-        qty:          item.qty || item.quantity || 1,
-        line_total:   item.line_total || (item.price * (item.qty || item.quantity || 1)),
-      }));
-    } catch (err) {
-      console.warn('Cannot parse localStorage cart:', err);
-      this.cart = [];
-    }
-  }
-
-  /* ── FETCH FROM API ──────────────────────────────────────────– */
-  async fetchFromAPI() {
-    if (!this.isLoggedIn) return;
-
-    try {
+    /* ── CHECK LOGIN ──────────────────────────────────────────────*/
+    checkLoginStatus() {
       const token = localStorage.getItem('access_token');
-      const res = await fetch(`${this.apiBase}/cart/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      if (!token) { this.isLoggedIn = false; return; }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        this.isLoggedIn = payload.exp * 1000 > Date.now();
+      } catch {
+        this.isLoggedIn = false;
+      }
+    }
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    /* ── LOAD FROM LOCALSTORAGE (fallback only) ───────────────────*/
+    loadFromLocalStorage() {
+      try {
+        const raw  = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+        this.cart  = raw.map(item => ({
+          id:           item.id           || null,
+          product_id:   item.product_id   || item.id,
+          product_name: item.product_name || item.name || '',
+          price:        item.price        || 0,
+          image_url:    item.image_url    || item.img  || '',
+          qty:          item.qty          || item.quantity || 1,
+          line_total:   item.line_total   || ((item.price || 0) * (item.qty || item.quantity || 1)),
+          product_type: item.product_type || 'product',
+          cat:          item.cat          || '',
+        }));
+      } catch {
+        this.cart = [];
+      }
+    }
 
-      const data = await res.json();
-      this.cart = data.items || [];
+    /* ── FETCH FROM API (always called when logged in) ─────────── */
+    async fetchFromAPI() {
+      if (!this.isLoggedIn) return;
+      try {
+        const token = localStorage.getItem('access_token');
+        const res   = await fetch(`${this.apiBase}/cart/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type':  'application/json',
+          },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Normalize API response fields to match local format
+        this.cart = (data.items || []).map(item => ({
+          id:           item.id,
+          product_id:   item.product_id,
+          product_name: item.product_name || '',
+          price:        item.price        || 0,
+          image_url:    item.image_url    || '',
+          qty:          item.quantity     || 1,
+          line_total:   item.line_total   || (item.price * item.quantity),
+          product_type: item.product_type || 'product',
+          cat:          item.cat          || '',
+        }));
+
+        this.saveToLocalStorage();
+      } catch (err) {
+        console.warn('[CartSidebar] fetchFromAPI failed, using localStorage cache:', err);
+      }
+    }
+
+    /* ── SAVE TO LOCALSTORAGE ─────────────────────────────────────*/
+    saveToLocalStorage() {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.cart));
+      this.updateBadge();
+    }
+
+    /* ── ADD ITEM (called from order.js) ─────────────────────────*/
+    async addItem(productId, productName, price, imageUrl = null, productType = 'product') {
+      const existing = this.cart.find(x => x.product_id === productId);
+      if (existing) {
+        existing.qty       += 1;
+        existing.line_total = existing.price * existing.qty;
+      } else {
+        this.cart.push({
+          id:           null,
+          product_id:   productId,
+          product_name: productName,
+          price:        price,
+          image_url:    imageUrl,
+          qty:          1,
+          line_total:   price,
+          product_type: productType,
+          cat:          '',
+        });
+      }
       this.saveToLocalStorage();
-      console.log('[CartSidebar] Fetched from API:', this.cart.length, 'items');
-    } catch (err) {
-      console.warn('[CartSidebar] Failed to fetch from API, using localStorage:', err);
-    }
-  }
+      this.renderSidebar();
+      await this.showSidebar();
 
-  /* ── SAVE TO LOCALSTORAGE ────────────────────────────────────– */
-  saveToLocalStorage() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.cart));
-    this.updateBadge();
-  }
-
-  /* ── ADD ITEM ────────────────────────────────────────────────– */
-  async addItem(productId, productName, price, imageUrl = null) {
-    const existing = this.cart.find(x => x.product_id === productId);
-
-    if (existing) {
-      existing.qty += 1;
-      existing.line_total = existing.price * existing.qty;
-    } else {
-      this.cart.push({
-        product_id: productId,
-        product_name: productName,
-        price: price,
-        image_url: imageUrl,
-        qty: 1,
-        line_total: price,
-      });
-    }
-
-    this.saveToLocalStorage();
-    this.renderSidebar();
-    this.showSidebar();
-    this.showToast(`✓ Đã thêm "${productName}" vào giỏ hàng`, 'success');
-
-    // Sync to API if logged in
-    if (this.isLoggedIn) {
-      await this.syncAddToAPI(productId, 1);
-    }
-  }
-
-  /* ── SYNC ADD TO API ─────────────────────────────────────────– */
-  async syncAddToAPI(productId, quantity) {
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${this.apiBase}/cart/add`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ product_id: productId, quantity }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Sync failed');
+      // Sync to API if logged in
+      if (this.isLoggedIn) {
+        await this.syncAddToAPI(productId, 1);
+        // Re-fetch to get real cart item IDs
+        await this.fetchFromAPI();
+        this.renderSidebar();
       }
-
-      console.log('[CartSidebar] Synced to API:', productId);
-    } catch (err) {
-      console.warn('[CartSidebar] Sync to API failed:', err);
-      this.showToast('⚠ Giỏ hàng chưa lưu trên server', 'warning');
     }
-  }
 
-  /* ── REMOVE ITEM ─────────────────────────────────────────────– */
-  async removeItem(idx) {
-    if (!confirm('Xóa sản phẩm này khỏi giỏ hàng?')) return;
+    /* ── SYNC ADD TO API ──────────────────────────────────────────*/
+    async syncAddToAPI(productId, quantity) {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      try {
+        const res = await fetch(`${this.apiBase}/cart/add`, {
+          method:  'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type':  'application/json',
+          },
+          body: JSON.stringify({ product_id: productId, quantity }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Sync failed');
+        }
+      } catch (err) {
+        console.warn('[CartSidebar] syncAddToAPI failed:', err);
+        this.showToast('⚠ Không thể lưu giỏ hàng trên server', 'warning');
+      }
+    }
 
-    this.cart.splice(idx, 1);
-    this.saveToLocalStorage();
-    this.renderSidebar();
-    this.showToast('✓ Đã xóa sản phẩm', 'success');
-  }
+    /* ── REMOVE ITEM (calls DELETE /cart/{id} on API) ─────────── */
+    async removeItem(idx, cartItemId = null) {
+      const confirmed = confirm('Xóa sản phẩm này khỏi giỏ hàng?');
+      if (!confirmed) return;
 
-  /* ── RENDER SIDEBAR ──────────────────────────────────────────– */
-  renderSidebar() {
-    const sidebar = document.getElementById('cartSidebar');
-    if (!sidebar) return;
+      this.cart.splice(idx, 1);
+      this.saveToLocalStorage();
+      this.renderSidebar();
+      this.showToast('✓ Đã xóa sản phẩm', 'success');
 
-    const isEmpty = this.cart.length === 0;
-    const total = this.cart.reduce((s, x) => s + x.line_total, 0);
+      // Sync delete to API
+      if (this.isLoggedIn && cartItemId) {
+        const token = localStorage.getItem('access_token');
+        try {
+          await fetch(`${this.apiBase}/cart/${cartItemId}`, {
+            method:  'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type':  'application/json',
+            },
+          });
+        } catch (err) {
+          console.warn('[CartSidebar] removeItem API failed:', err);
+        }
+      }
+    }
 
-    sidebar.innerHTML = `
-      <!-- Header -->
-      <div class="cart-sidebar-header">
-        <h3><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</h3>
-        <button class="btn-close" type="button" aria-label="Đóng" onclick="cartSidebarInstance.hideSidebar()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
+    /* ── RENDER SIDEBAR ───────────────────────────────────────────*/
+    renderSidebar() {
+      const sidebar = document.getElementById('cartSidebar');
+      if (!sidebar) return;
 
-      <!-- Content -->
-      <div class="cart-sidebar-content">
-        ${isEmpty ? this.renderEmpty() : this.renderItems(total)}
-      </div>
+      const isEmpty = this.cart.length === 0;
+      const total   = this.cart.reduce((s, x) => s + (x.line_total || x.price * x.qty), 0);
 
-      <!-- Footer -->
-      ${!isEmpty ? `
-        <div class="cart-sidebar-footer">
-          <div class="cart-total">
-            <span>Tạm tính:</span>
-            <span class="total-price">${this.formatPrice(total)}</span>
-          </div>
-          <a href="/cart" class="btn-checkout">
-            <i class="fa-solid fa-arrow-right"></i> Tiến hành thanh toán
-          </a>
+      sidebar.innerHTML = `
+        <div class="cart-sidebar-header">
+          <h3><i class="fa-solid fa-bag-shopping"></i> Giỏ hàng
+            ${this.cart.length > 0 ? `<span class="cart-count-pill">${this.cart.reduce((s,x)=>s+x.qty,0)}</span>` : ''}
+          </h3>
+          <button class="btn-close-sidebar" type="button" onclick="cartSidebarInstance.hideSidebar()" aria-label="Đóng">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-      ` : ''}
-    `;
-  }
 
-  renderEmpty() {
-    return `
-      <div class="cart-empty">
-        <div class="empty-icon"><i class="fa-solid fa-bag-shopping"></i></div>
-        <h4>Giỏ hàng trống</h4>
-        <p>Khám phá bộ sưu tập nhạc cụ của chúng tôi ngay hôm nay</p>
-        <a href="/order" class="btn-browse">Khám phá sản phẩm</a>
-      </div>
-    `;
-  }
+        <div class="cart-sidebar-content">
+          ${isEmpty ? this.renderEmpty() : this.renderItems()}
+        </div>
 
-  renderItems(total) {
-    return `
-      <div class="cart-items-list">
-        ${this.cart.map((item, idx) => `
-          <div class="cart-item-card">
-            <div class="item-thumb" style="${item.image_url ? `background-image: url('${item.image_url}')` : 'background: linear-gradient(135deg, #f5ede4, #ead9c4); display: flex; align-items: center; justify-content: center;'} background-position: center; background-size: cover;">
-              ${!item.image_url ? '<i class="fa-solid fa-guitar" style="font-size: 24px; color: #a08060;"></i>' : ''}
+        ${!isEmpty ? `
+          <div class="cart-sidebar-footer">
+            <div class="cart-promo-banner">
+              <i class="fa-solid fa-truck-fast"></i>
+              ${total >= 50_000_000 ? '<span>🎉 Miễn phí vận chuyển!</span>' : `<span>Mua thêm <strong>${this.formatPrice(50_000_000 - total)}</strong> để miễn phí ship</span>`}
             </div>
-            <div class="item-info">
-              <div class="item-name">${item.product_name}</div>
-              <div class="item-price">${this.formatPrice(item.price)} × <strong>${item.qty}</strong></div>
+            <div class="cart-total-row">
+              <span>Tạm tính:</span>
+              <span class="total-price-big">${this.formatPrice(total)}</span>
             </div>
-            <button type="button" class="btn-remove" onclick="cartSidebarInstance.removeItem(${idx})" title="Xóa">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
+            <a href="/cart" class="btn-goto-checkout">
+              <i class="fa-solid fa-lock"></i> Tiến hành thanh toán
+            </a>
+            <a href="/order" class="btn-continue-shopping">
+              <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+            </a>
           </div>
-        `).join('')}
-      </div>
-    `;
-  }
+        ` : ''}
+      `;
+    }
 
-  /* ── UTILITIES ───────────────────────────────────────────────– */
-  updateBadge() {
-    const total = this.cart.reduce((s, x) => s + x.qty, 0);
-    document.querySelectorAll('.cart-badge, .badge-cart').forEach(el => {
-      el.textContent = total;
-      el.style.display = total > 0 ? 'block' : 'none';
-    });
-  }
+    renderEmpty() {
+      return `
+        <div class="cart-empty-state">
+          <div class="empty-icon-wrap">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+          <h4>Giỏ hàng trống</h4>
+          <p>Hãy khám phá bộ sưu tập nhạc cụ tuyệt vời của chúng tôi!</p>
+          <a href="/order" class="btn-explore" onclick="cartSidebarInstance.hideSidebar()">
+            <i class="fa-solid fa-guitar"></i> Khám phá sản phẩm
+          </a>
+          ${!this.isLoggedIn ? `
+            <div class="login-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              <a href="/login">Đăng nhập</a> để lưu giỏ hàng trên mọi thiết bị
+            </div>` : ''}
+        </div>
+      `;
+    }
 
-  formatPrice(n) {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(n || 0);
-  }
+    renderItems() {
+      const featuredPromos = [
+        { code: 'MOC10', label: 'Giảm 10%', color: '#16a34a' },
+        { code: 'NEWUSER', label: 'Khách mới −15%', color: '#0284c7' },
+        { code: 'GUITAR50', label: 'Giảm 500K', color: '#9333ea' },
+      ];
 
-  showSidebar() {
-    const sidebar = document.getElementById('cartSidebar');
-    const backdrop = document.getElementById('cartBackdrop');
-    if (sidebar) sidebar.classList.add('open');
-    if (backdrop) backdrop.classList.add('open');
-    this.isOpen = true;
-  }
+      return `
+        <div class="cart-items-list">
+          ${this.cart.map((item, idx) => `
+            <div class="cart-item-row" id="cartRow${idx}">
+              <div class="item-img-wrap">
+                ${item.image_url
+                  ? `<img src="${item.image_url}" alt="${item.product_name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                  : ''}
+                <div class="item-img-placeholder" style="${item.image_url ? 'display:none' : ''}">
+                  <i class="fa-solid ${item.product_type === 'course' ? 'fa-graduation-cap' : 'fa-guitar'}"></i>
+                </div>
+              </div>
+              <div class="item-details">
+                <div class="item-type-tag ${item.product_type === 'course' ? 'tag-course' : 'tag-product'}">
+                  ${item.product_type === 'course' ? 'Khóa học' : (item.cat || 'Sản phẩm')}
+                </div>
+                <div class="item-name-text" title="${item.product_name}">${item.product_name}</div>
+                <div class="item-unit">${this.formatPrice(item.price)} × ${item.qty}</div>
+              </div>
+              <div class="item-actions-col">
+                <div class="item-subtotal">${this.formatPrice(item.line_total || item.price * item.qty)}</div>
+                <button class="btn-remove-item" onclick="cartSidebarInstance.removeItem(${idx}, ${item.id || 'null'})" title="Xóa">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
 
-  hideSidebar() {
-    const sidebar = document.getElementById('cartSidebar');
-    const backdrop = document.getElementById('cartBackdrop');
-    if (sidebar) sidebar.classList.remove('open');
-    if (backdrop) backdrop.classList.remove('open');
-    this.isOpen = false;
-  }
+        <div class="promo-codes-strip">
+          <div class="promo-strip-label"><i class="fa-solid fa-tag"></i> Mã ưu đãi</div>
+          <div class="promo-chips">
+            ${featuredPromos.map(p => `
+              <span class="promo-chip" onclick="navigator.clipboard?.writeText('${p.code}').then(()=>cartSidebarInstance.showToast('✓ Đã sao chép ${p.code}','success'))" title="Nhấn để copy mã">
+                <i class="fa-solid fa-scissors"></i> ${p.code}
+                <span class="chip-label">${p.label}</span>
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
 
-  toggleSidebar() {
-    if (this.isOpen) {
-      this.hideSidebar();
-    } else {
-      this.showSidebar();
+    /* ── UTILITIES ────────────────────────────────────────────────*/
+    updateBadge() {
+      const total = this.cart.reduce((s, x) => s + (x.qty || 1), 0);
+      document.querySelectorAll('.cart-badge, .badge-cart, #cartCount').forEach(el => {
+        el.textContent   = total;
+        el.style.display = total > 0 ? 'flex' : 'none';
+      });
+    }
+
+    formatPrice(n) {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency', currency: 'VND',
+      }).format(n || 0);
+    }
+
+    /* ── SHOW / HIDE ──────────────────────────────────────────────*/
+    async showSidebar() {
+      const sidebar  = document.getElementById('cartSidebar');
+      const backdrop = document.getElementById('cartBackdrop');
+
+      // Open immediately with cached data for instant feedback
+      if (sidebar)  sidebar.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
+      this.isOpen = true;
+
+      // Show current state
+      this.renderSidebar();
+
+      // Then refresh from API in background (if logged in)
+      if (this.isLoggedIn) {
+        await this.fetchFromAPI();
+        this.renderSidebar();
+        this.updateBadge();
+      }
+    }
+
+    hideSidebar() {
+      const sidebar  = document.getElementById('cartSidebar');
+      const backdrop = document.getElementById('cartBackdrop');
+      if (sidebar)  sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
+      this.isOpen = false;
+    }
+
+    async toggleSidebar() {
+      if (this.isOpen) {
+        this.hideSidebar();
+      } else {
+        await this.showSidebar();
+      }
+    }
+
+    showToast(message, type = 'info') {
+      const toast = document.getElementById('cartToast');
+      if (!toast) return;
+      toast.textContent  = message;
+      toast.className    = `cart-toast ${type}`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    showSidebarQuick() {
+      const sidebar  = document.getElementById('cartSidebar');
+      const backdrop = document.getElementById('cartBackdrop');
+      if (sidebar)  sidebar.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
+      this.isOpen = true;
+      this.renderSidebar();
     }
   }
 
-  showToast(message, type = 'info') {
-    const toast = document.getElementById('cartToast');
-    if (!toast) return;
+  /* ── GLOBAL INSTANCE ──────────────────────────────────────────────*/
+  // Khai báo instance trên window để các onclick trong HTML có thể gọi được
+  window.cartSidebarInstance = null;
 
-    toast.textContent = message;
-    toast.className = `cart-toast ${type}`;
-    toast.classList.add('show');
+  document.addEventListener('DOMContentLoaded', () => {
+    // Chỉ khởi tạo 1 lần
+    if (!window.cartSidebarInstance) {
+      window.cartSidebarInstance = new CartSidebar();
+    }
 
-    setTimeout(() => toast.classList.remove('show'), 3500);
-  }
+    const cartInstance = window.cartSidebarInstance;
+
+    document.querySelectorAll('[data-toggle-cart]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await cartInstance.toggleSidebar();
+      });
+    });
+
+    const backdrop = document.getElementById('cartBackdrop');
+    if (backdrop) {
+      backdrop.addEventListener('click', () => cartInstance.hideSidebar());
+    }
+
+    document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        if (!cartInstance.isLoggedIn) {
+          const next = window.location.pathname + window.location.search;
+          window.location.href = `/login?next=${encodeURIComponent(next)}`;
+          return;
+        }
+
+        const productId   = btn.dataset.productId;
+        const productName = btn.dataset.productName;
+        const price       = parseFloat(btn.dataset.price);
+        const imageUrl    = btn.dataset.imageUrl || null;
+
+        if (!productId || !productName || !price) {
+          cartInstance.showToast('Lỗi: Thiếu thông tin sản phẩm', 'error');
+          return;
+        }
+
+        await cartInstance.addItem(Number(productId), productName, price, imageUrl);
+      });
+    });
+
+    console.log('[CartSidebar v2] Initialized');
+  });
+
+  /* ── FIX: Expose functions globally ──*/
+  window.toggleCart = async () => {
+    if (window.cartSidebarInstance) await window.cartSidebarInstance.toggleSidebar();
+  };
+
+  // Đánh dấu là đã khai báo để vòng lặp if bên ngoài bắt được ở lần gọi sau
+  window.CartSidebar = CartSidebar;
 }
-
-/* ── GLOBAL INSTANCE ────────────────────────────────────────────– */
-let cartSidebarInstance = null;
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize CartSidebar
-  cartSidebarInstance = new CartSidebar();
-
-  // Event: Click cart icon/button to toggle sidebar
-  document.querySelectorAll('[data-toggle-cart]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      cartSidebarInstance.toggleSidebar();
-    });
-  });
-
-  // Event: Add to cart buttons
-  document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-
-      // Check login first
-      if (!cartSidebarInstance.isLoggedIn) {
-        const currentUrl = window.location.pathname + window.location.search;
-        window.location.href = `/login?next=${encodeURIComponent(currentUrl)}`;
-        return;
-      }
-
-      // Extract data
-      const productId = btn.dataset.productId;
-      const productName = btn.dataset.productName;
-      const price = parseFloat(btn.dataset.price);
-      const imageUrl = btn.dataset.imageUrl || null;
-
-      if (!productId || !productName || !price) {
-        console.error('Missing product data:', { productId, productName, price });
-        cartSidebarInstance.showToast('Lỗi: Dữ liệu sản phẩm không đầy đủ', 'error');
-        return;
-      }
-
-      await cartSidebarInstance.addItem(productId, productName, price, imageUrl);
-    });
-  });
-
-  // Close sidebar when clicking backdrop
-  const backdrop = document.getElementById('cartBackdrop');
-  if (backdrop) {
-    backdrop.addEventListener('click', () => {
-      cartSidebarInstance.hideSidebar();
-    });
-  }
-
-  console.log('[CartSidebar] Initialized successfully');
-});
-
-// Expose globally
-window.CartSidebar = CartSidebar;

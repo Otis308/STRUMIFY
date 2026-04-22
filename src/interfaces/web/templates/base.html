@@ -4,20 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      /* Reset cơ bản */
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
-
       body {
-        overflow-x: hidden; /* Không tràn ngang */
+        overflow-x: hidden;
       }
-
       img {
         max-width: 100%;
-        height: auto; /* Ảnh không bao giờ méo/tràn */
+        height: auto;
         display: block;
       }
     </style>
@@ -36,12 +33,16 @@
       rel="stylesheet"
       href="{{ url_for('static', path='css/base.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='css/sidebar-cart.css') }}"
+    />
     <script src="{{ url_for('static', path='js/base.js') }}" defer></script>
     {% block custom_css %}{% endblock %}
   </head>
 
   <body>
-    <!-- ══ HEADER / NAVBAR ══════════════════════════════════════════ -->
+    <!-- ══ HEADER / NAVBAR ═════════════════════════════════════════ -->
     <header class="site-header" id="siteHeader">
       <nav class="navbar">
         <button class="hamburger" id="hamburger"></button>
@@ -53,9 +54,7 @@
               >Giáo dục <i class="fa-solid fa-chevron-down chevron-icon"></i
             ></a>
             <ul class="dropdown-content">
-              <li>
-                <a href="{{ url_for('course') }}">Các khóa học</a>
-              </li>
+              <li><a href="{{ url_for('course') }}">Các khóa học</a></li>
               <li><a href="/#curriculum">Giáo trình</a></li>
             </ul>
           </li>
@@ -94,7 +93,6 @@
                 <li><a href="/#consulting">Tư vấn</a></li>
               </ul>
             </li>
-
             <li><a href="/#careers">Tuyển dụng</a></li>
           </ul>
 
@@ -107,6 +105,7 @@
               <i class="fa-solid fa-bars"></i>
             </button>
 
+            <!-- Search -->
             <div class="moc-search-container">
               <button
                 id="mocBtnSearch"
@@ -132,24 +131,31 @@
                   type="text"
                   id="mocInputSearch"
                   class="moc-input-search"
-                  placeholder="♫ Tìm kiếm nhạc cụ… "
+                  placeholder="♫ Tìm kiếm nhạc cụ…"
                   autocomplete="off"
                 />
               </div>
             </div>
 
             <button
-              class="btn-cart"
+              class="btn-cart action-btn"
               data-toggle-cart
               id="btnCart"
-              onclick="toggleCart()"
               aria-label="Giỏ hàng"
+              type="button"
             >
               <i class="fa-solid fa-bag-shopping"></i>
-              <span class="cart-badge" id="cartCount">0</span>
+              <span class="cart-badge" id="cartCount" style="display: none"
+                >0</span
+              >
             </button>
 
-            <a href="/profile" class="action-btn" id="btnProfile">
+            <a
+              href="/profile"
+              class="action-btn"
+              id="btnProfile"
+              style="display: none"
+            >
               <i class="fa-regular fa-id-card"></i>
             </a>
             <a href="/login" class="action-btn btn-login" id="btnLogin">
@@ -175,10 +181,10 @@
         </div>
       </nav>
 
+      <!-- Mobile nav -->
       <nav id="navMenu" class="mobile-nav-menu">
         <a href="/#about">Giới thiệu</a>
         <a href="/order">Sản phẩm</a>
-
         <div class="mobile-dropdown-group">
           <a href="/#education"
             >Giáo dục <i class="fa-solid fa-chevron-down"></i
@@ -188,16 +194,13 @@
             <a href="/#curriculum">Giáo trình</a>
           </div>
         </div>
-
         <a href="/#promotions">Khuyến mãi</a>
-
         <div class="mobile-dropdown-group">
           <a href="/order">Dịch vụ <i class="fa-solid fa-chevron-down"></i></a>
           <div class="mobile-sub-menu">
             <a href="{{ url_for('repair') }}">Bảo dưỡng – Sửa chữa</a>
           </div>
         </div>
-
         <div class="mobile-dropdown-group">
           <a href="/#news">Tin tức <i class="fa-solid fa-chevron-down"></i></a>
           <div class="mobile-sub-menu">
@@ -206,14 +209,14 @@
             <a href="/#consulting">Tư vấn</a>
           </div>
         </div>
-
         <a href="/#careers">Tuyển dụng</a>
       </nav>
     </header>
-    <!-- ══ MAIN CONTENT ═════════════════════════════════════════════ -->
+
+    <!-- ══ MAIN CONTENT ════════════════════════════════════════════ -->
     <main>{% block content %}{% endblock %}</main>
 
-    <!-- ══ FOOTER ═══════════════════════════════════════════════════ -->
+    <!-- ══ FOOTER ══════════════════════════════════════════════════ -->
     <footer>
       <div class="footer-inner">
         <div class="footer-brand">
@@ -237,7 +240,6 @@
             ></a>
           </div>
         </div>
-
         <div class="footer-col">
           <h4>Sản phẩm</h4>
           <ul>
@@ -249,18 +251,16 @@
             <li><a href="/order?cat=Flute">Sáo Flute</a></li>
           </ul>
         </div>
-
         <div class="footer-col">
           <h4>Hỗ trợ</h4>
           <ul>
             <li><a href="/profile">Tài khoản của tôi</a></li>
-            <li><a href="/profile#orders">Đơn hàng</a></li>
+            <li><a href="/profile">Đơn hàng</a></li>
             <li><a href="/#faq">Câu hỏi thường gặp</a></li>
             <li><a href="/#maintenance">Bảo dưỡng</a></li>
             <li><a href="/login">Đăng nhập / Đăng ký</a></li>
           </ul>
         </div>
-
         <div class="footer-col">
           <h4>Liên hệ</h4>
           <ul class="footer-contact">
@@ -279,69 +279,29 @@
       </div>
       <div id="chatContainer"></div>
     </footer>
+
     {% block custom_js %}{% endblock %}
-    <!-- ── CART OVERLAY + SIDEBAR ── -->
-    <div class="cart-icon" onclick="toggleCart()">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span id="cartCount">0</span>
-    </div>
-    <div class="cart-sidebar" id="cartSidebar">
-      <div class="cart-header">
-        <h2><i class="fa-solid fa-cart-shopping"></i> Giỏ hàng</h2>
-        <button class="close-cart" onclick="toggleCart()">✕</button>
-      </div>
 
-      <div class="cart-items" id="cartItems"></div>
+    <!--
+      ══ CART SIDEBAR (FIXED) ══════════════════════════════════════
+      FIX: Previously there were TWO elements with id="cartSidebar":
+        1. <div class="cart-sidebar" id="cartSidebar"> — old static HTML version
+        2. <aside class="cart-sidebar" id="cartSidebar"> — new dynamic version
 
-      <div class="cart-footer">
-        <div class="coupon-row">
-          <input
-            type="text"
-            class="coupon-input"
-            id="couponInput"
-            placeholder="MÃ GIẢM GIÁ"
-          />
-          <button class="coupon-btn" onclick="applyCoupon()">
-            <i class="fa-solid fa-tag"></i> Áp dụng
-          </button>
-        </div>
-        <p class="coupon-msg" id="couponMsg"></p>
+      getElementById() returns only the FIRST match, so sidebar-cart.js
+      was rendering into the OLD div while the NEW aside stayed empty.
+      
+      Solution: Remove the old <div> entirely. Keep only this <aside>.
+      sidebar-cart.js will renderSidebar() into this element.
 
-        <div class="price-summary">
-          <div class="price-row">
-            <span>Tạm tính</span>
-            <span id="summarySubtotal">0₫</span>
-          </div>
-          <div class="price-row discount">
-            <span><i class="fa-solid fa-circle-minus"></i> Giảm giá</span>
-            <span id="summaryDiscount">−0₫</span>
-          </div>
-          <div class="price-row total">
-            <span>Tổng cộng</span>
-            <span id="summaryTotal">0₫</span>
-          </div>
-        </div>
-
-        <button
-          class="checkout-btn"
-          id="checkoutBtn"
-          onclick="openCheckout()"
-          disabled
-        >
-          <i class="fa-solid fa-lock"></i> Thanh toán ngay
-        </button>
-      </div>
-    </div>
-    <script src="{{ url_for('static', path='js/hopper.js') }}" defer></script>
-
-    <aside class="cart-sidebar" id="cartSidebar"></aside>
+      FIX: Also removed the old floating <div class="cart-icon"> which
+      had a duplicate id="cartCount" and called undefined toggleCart().
+    -->
+    <aside class="cart-sidebar" id="cartSidebar" aria-label="Giỏ hàng"></aside>
     <div class="cart-backdrop" id="cartBackdrop"></div>
-    <div class="cart-toast" id="cartToast"></div>
+    <div class="cart-toast" id="cartToast" role="alert"></div>
 
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', path='css/sidebar-cart.css') }}"
-    />
     <script src="{{ url_for('static', path='js/sidebar-cart.js') }}"></script>
+    <script src="{{ url_for('static', path='js/hopper.js') }}" defer></script>
   </body>
 </html>

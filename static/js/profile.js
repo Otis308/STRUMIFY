@@ -5,18 +5,13 @@
 
 'use strict';
 
-const API_BASE = '';
+const API_BASE = 'http://127.0.0.1:8000';
 
 /* ── AUTH ────────────────────────────────────────────────────────────────── */
-function getToken() {
-  return localStorage.getItem('access_token') || '';
-}
+function getToken() { return localStorage.getItem('access_token') || ''; }
 
 function getHeaders() {
-  return {
-    'Authorization': `Bearer ${getToken()}`,
-    'Content-Type': 'application/json',
-  };
+  return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' };
 }
 
 /* ── FORMAT ──────────────────────────────────────────────────────────────── */
@@ -41,6 +36,39 @@ function formatStatus(status) {
     'cancelled': { text: 'Hủy', class: 's-cancelled', icon: 'fa-xmark-circle' },
   };
   return statusMap[status] || { text: status, class: '', icon: 'fa-circle' };
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LOAD USERS INFO
+   ════════════════════════════════════════════════════════════════════════════ */
+async function loadUserInfo() {
+  if (!getToken()) return; // Nếu chưa đăng nhập thì thôi
+  
+  try {
+    const res = await fetch(`${API_BASE}/users/me`, { headers: getHeaders() });
+    if (!res.ok) return;
+    const user = await res.json();
+
+    // 1. Cập nhật Tên và Email ở Sidebar & TopNav
+    document.querySelectorAll('.sidebar-name, .topnav-name').forEach(el => el.textContent = user.full_name || 'Khách hàng MỘC');
+    document.querySelectorAll('.sidebar-nickname').forEach(el => el.textContent = user.email || '');
+
+    // 2. Cập nhật vào Form thông tin cá nhân (Cần có ID ở HTML)
+    const inputName = document.getElementById('profileName');
+    const inputEmail = document.getElementById('profileEmail');
+    if (inputName) inputName.value = user.full_name || '';
+    if (inputEmail) inputEmail.value = user.email || '';
+
+    // Lấy chữ cái đầu làm Avatar
+    const avatarInitials = (user.full_name || 'M').charAt(0).toUpperCase();
+    document.querySelectorAll('.avatar-ring img').forEach(el => {
+      el.style.display = 'none'; // Ẩn ảnh mẫu đi
+    });
+    // Có thể code thêm logic tạo avatar chữ ở đây nếu cần
+
+  } catch (err) {
+    console.error('[Profile] Lỗi lấy thông tin user:', err);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -191,6 +219,7 @@ function logout() {
    ════════════════════════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadUserInfo();
   document.querySelectorAll('.sidebar-nav a').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -209,10 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = modal.querySelector('.modal-close-btn');
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
   }
-
-  console.log('[Profile v2] Initialized');
+  console.log('[Profile] Initialized');
 });
-
 window.switchSection = switchSection;
 window.loadOrderHistory = loadOrderHistory;
 window.openModal = openModal;

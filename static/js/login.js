@@ -166,7 +166,10 @@ async function handleRegister(event) {
   if (fields.username.length < 2)    { document.getElementById('errName').textContent   = 'Họ tên ≥ 2 ký tự.'; return; }
   if (!fields.dob)                   { document.getElementById('errDob').textContent    = 'Chọn ngày sinh.'; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) { document.getElementById('errEmail').textContent = 'Email không đúng định dạng.'; return; }
-  if (!/^(0|\+84)[3578][0-9]{8}$/.test(fields.phone))   { document.getElementById('errPhone').textContent = 'SĐT không hợp lệ (VD: 0912345678).'; return; }
+  if (!/^(0[1-9]{1}[0-9]{8}|\+84[1-9]{1}[0-9]{8})$/.test(fields.phone)) {
+    document.getElementById('errPhone').textContent = 'SĐT không hợp lệ (VD: 0912345678)';
+    return;
+  }
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(fields.password)) {
     showMsg('Mật khẩu cần ≥ 8 ký tự, có chữ hoa, thường, số và ký tự đặc biệt!'); return;
   }

@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://wpbmixpiydtbrgcentrt.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwYm1peHBpeWR0YnJnY2VudHJ0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzY3Mzk4NSwiZXhwIjoyMDg5MjQ5OTg1fQ.cp7sr9cLdJx4WwWaOj0G3TV99BFQ5XM934ZLU4vO43A")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 
 if not SUPABASE_URL or not SUPABASE_KEY:

@@ -1,19 +1,18 @@
 """
-routers/rout_order.py – Strumify (Updated)
+routers/rout_order.py – Strumify
 Thanh toán → Lưu Orders → Dọn Cart → Tạo Enrollments → Gửi Email
 
-Logic đặt hàng:
-  1. Lấy giỏ hàng từ DB (không tin frontend)
-  2. Verify giá từ bảng products
-  3. Lưu orders + order_items
-  4. Xóa cart_items của user
-  5. Nếu có KHÓA HỌC → tạo enrollment → gửi email (background)
+FIX: Removed 'line_total' from order_items INSERT.
+     line_total is a GENERATED ALWAYS AS column in PostgreSQL —
+     inserting into it raises: "column line_total is a generated column".
+     PostgreSQL computes it automatically from price_at_purchase × quantity.
 """
 from __future__ import annotations
 
 import secrets
 from datetime import datetime, timezone
 from typing import Optional
+import uuid
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Query
 from pydantic import BaseModel
@@ -31,24 +30,22 @@ VALID_STATUSES = {"processing", "confirmed", "shipping", "delivered", "cancelled
 class CheckoutRequest(BaseModel):
     """
     Frontend chỉ cần gửi thông tin giao hàng & coupon.
-    Giỏ hàng lấy từ DB (cart_items của user).
+    Giỏ hàng lấy từ DB (cart_items của user) — không tin frontend.
     """
     receiver_name:    str
     receiver_phone:   str
     receiver_email:   Optional[str] = None
     receiver_address: str
     note:             Optional[str] = None
-    pay_method:       str = "cod"       # cod | bank | momo
+    pay_method:       str = "cod"   # cod | bank | momo
     coupon_code:      Optional[str] = None
 
 
 # ── HELPERS ───────────────────────────────────────────────────────
 def _gen_order_code() -> str:
     year = datetime.now(timezone.utc).year
-    rand = secrets.token_hex(3).upper()
-    res  = supabase.table("orders").select("id").order("id", desc=True).limit(1).execute()
-    last = res.data[0]["id"] if res.data else 0
-    return f"STR-{year}-{last + 1:05d}"
+    short_id = str(uuid.uuid4())[:6].upper() 
+    return f"STR-{year}-{short_id}"
 
 
 def _gen_student_code() -> str:
@@ -61,18 +58,23 @@ def _gen_student_code() -> str:
 # ── CHECKOUT ─────────────────────────────────────────────────────
 @router.post("/checkout", status_code=201, summary="Thanh toán giỏ hàng")
 async def checkout(
-    body:       CheckoutRequest,
-    background: BackgroundTasks,
+    body:         CheckoutRequest,
+    background:   BackgroundTasks,
     current_user: dict = Depends(get_current_user),
 ):
     """
-    Data Flow:
-      Cart DB → Verify giá → Tạo Order → Xóa Cart
-      → Nếu có Course → Tạo Enrollment → Gửi Email (background)
+    Data Flow (server-authoritative):
+      1. Lấy cart từ DB (không dùng localStorage)
+      2. Verify giá từ bảng products
+      3. Validate coupon
+      4. Tạo orders + order_items (không INSERT line_total — là GENERATED column)
+      5. Xóa cart_items
+      6. Cập nhật coupon used_count + user stats
+      7. Tạo enrollments cho course items + gửi email background
     """
     user_id = current_user["id"]
 
-    # ── 1. Lấy giỏ hàng từ DB ───────────────────────────────────
+    # ── 1. Lấy giỏ hàng từ DB ─────────────────
     cart_res = supabase.table("cart_items").select(
         "id, quantity, product_id, "
         "products(id, name, product_type, price, image_url, img, cat, "
@@ -81,7 +83,10 @@ async def checkout(
 
     cart_items = cart_res.data or []
     if not cart_items:
-        raise HTTPException(400, detail="Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi thanh toán.")
+        raise HTTPException(
+            400,
+            detail="Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi thanh toán."
+        )
 
     # ── 2. Tính subtotal từ giá DB (không tin frontend) ──────────
     subtotal = sum(
@@ -95,8 +100,11 @@ async def checkout(
     coupon   = None
     if body.coupon_code:
         code   = body.coupon_code.upper().strip()
-        cp_res = supabase.table("coupons").select("*").eq("code", code).eq("is_active", True).maybe_single().execute()
+        cp_res = supabase.table("coupons").select("*").eq("code", code).eq(
+            "is_active", True
+        ).maybe_single().execute()
         cp = cp_res.data
+
         if not cp:
             raise HTTPException(400, detail=f'Mã "{code}" không hợp lệ.')
         if cp.get("expires_at") and cp["expires_at"] < datetime.now(timezone.utc).isoformat():
@@ -104,10 +112,17 @@ async def checkout(
         if cp.get("max_uses") and int(cp.get("used_count", 0)) >= int(cp["max_uses"]):
             raise HTTPException(400, detail="Mã giảm giá đã hết lượt.")
         if subtotal < float(cp.get("min_order") or 0):
-            raise HTTPException(400, detail=f'Đơn tối thiểu {float(cp["min_order"]):,.0f}₫ để dùng mã này.')
+            raise HTTPException(
+                400,
+                detail=f'Đơn tối thiểu {float(cp["min_order"]):,.0f}₫ để dùng mã này.'
+            )
 
-        discount = int(subtotal * cp["value"] / 100) if cp["type"] == "percent" else int(cp["value"])
-        coupon   = code
+        discount = (
+            int(subtotal * cp["value"] / 100)
+            if cp["type"] == "percent"
+            else int(cp["value"])
+        )
+        coupon = code
 
     ship_fee = 0 if subtotal >= 50_000_000 else 20_000
     total    = max(0, int(subtotal) - discount + ship_fee)
@@ -130,13 +145,18 @@ async def checkout(
         "coupon_code":      coupon,
         "status":           "processing",
     }
+
     order_res = supabase.table("orders").insert(order_data).execute()
     if not order_res.data:
         raise HTTPException(500, detail="Không thể tạo đơn hàng. Vui lòng thử lại.")
 
     order_id = order_res.data[0]["id"]
 
-    # ── 5. Lưu order_items (snapshot giá tại thời điểm mua) ──────
+    # ── 5. Lưu order_items ───────────────────────────────────────
+    # CRITICAL FIX: Do NOT include 'line_total' in the insert dict.
+    # It is declared as GENERATED ALWAYS AS (price_at_purchase * quantity) STORED
+    # in PostgreSQL. Inserting it manually causes: "column is a generated column".
+    # PostgreSQL computes it automatically.
     order_items_data = []
     for item in cart_items:
         p = item.get("products") or {}
@@ -147,31 +167,35 @@ async def checkout(
             "product_img":       p.get("image_url") or p.get("img") or "",
             "product_cat":       p.get("cat", ""),
             "item_type":         p.get("product_type", "product"),
-            "price_at_purchase": float(p.get("price") or 0),
+            "price_at_purchase": int(float(p.get("price") or 0)),
             "quantity":          item["quantity"],
-            "line_total":        float(p.get("price") or 0) * item["quantity"],
+            # line_total intentionally omitted — PostgreSQL GENERATED column
         })
-    supabase.table("order_items").insert(order_items_data).execute()
 
-    # ── 6. Xóa giỏ hàng (Data Flow Step 4) ───────────────────────
+    if order_items_data:
+        supabase.table("order_items").insert(order_items_data).execute()
+
+    # ── 6. Xóa giỏ hàng ──────────────────────────────────────────
     supabase.table("cart_items").delete().eq("user_id", user_id).execute()
 
     # ── 7. Cập nhật coupon used_count ────────────────────────────
     if coupon:
-        cur = supabase.table("coupons").select("used_count").eq("code", coupon).single().execute()
+        cur       = supabase.table("coupons").select("used_count").eq("code", coupon).single().execute()
         new_count = int(cur.data.get("used_count") or 0) + 1
         supabase.table("coupons").update({"used_count": new_count}).eq("code", coupon).execute()
 
     # ── 8. Cập nhật thống kê user ─────────────────────────────────
-    u_stats = supabase.table("users").select("order_count, total_spent").eq("id", user_id).single().execute()
+    u_stats = supabase.table("users").select("order_count, total_spent").eq(
+        "id", user_id
+    ).single().execute()
     if u_stats.data:
         supabase.table("users").update({
             "order_count": int(u_stats.data.get("order_count") or 0) + 1,
             "total_spent":  int(u_stats.data.get("total_spent")  or 0) + total,
         }).eq("id", user_id).execute()
 
-    # ── 9. XỬ LÝ KHÓA HỌC: Tạo enrollment + gửi email ───────────
-    course_items   = [i for i in cart_items if (i.get("products") or {}).get("product_type") == "course"]
+    # ── 9. XỬ LÝ KHÓA HỌC ───────────────────────────────────────
+    course_items        = [i for i in cart_items if (i.get("products") or {}).get("product_type") == "course"]
     enrollments_created = []
 
     for item in course_items:
@@ -181,7 +205,6 @@ async def checkout(
         schedule     = p.get("schedule")
         instructor   = p.get("instructor")
 
-        # Lưu enrollment
         enroll_res = supabase.table("enrollments").insert({
             "student_code": student_code,
             "user_id":      user_id,
@@ -203,7 +226,6 @@ async def checkout(
                 "class_name":    class_name,
             })
 
-            # Gửi email trong background (không block response)
             to_email     = body.receiver_email or current_user.get("email", "")
             student_name = body.receiver_name  or current_user.get("username", "")
 
@@ -220,12 +242,15 @@ async def checkout(
             )
 
     return {
-        "status":       "success",
-        "order_code":   order_code,
-        "total":        total,
-        "item_count":   sum(i["quantity"] for i in cart_items),
-        "message":      "Đặt hàng thành công!",
-        "enrollments":  enrollments_created,
+        "status":      "success",
+        "order_code":  order_code,
+        "total":       total,
+        "subtotal":    int(subtotal),
+        "discount":    discount,
+        "ship_fee":    ship_fee,
+        "item_count":  sum(i["quantity"] for i in cart_items),
+        "message":     "Đặt hàng thành công! Cảm ơn bạn đã tin tưởng STRUMIFY 🎸",
+        "enrollments": enrollments_created,
     }
 
 
@@ -256,26 +281,23 @@ async def _send_enrollment_email_and_update(
         }).eq("id", enrollment_id).execute()
 
 
-# ── LẤY LỊCH SỬ ĐƠN HÀNG (user) ─────────────────────────────────
+# ── LỊCH SỬ ĐƠN HÀNG (user) ──────────────────────────────────────
 @router.get("/my", summary="Lịch sử mua hàng của user hiện tại")
 async def get_my_orders(current_user: dict = Depends(get_current_user)):
     res = supabase.table("orders").select(
         "id, order_code, status, total, subtotal, discount, ship_fee, "
-        "pay_method, receiver_name, receiver_address, created_at, coupon_code"
+        "pay_method, receiver_name, receiver_address, created_at, coupon_code, "
+        "order_items(product_name, product_img, product_cat, item_type, price_at_purchase, quantity, line_total)"
     ).eq("user_id", current_user["id"]).order("created_at", desc=True).execute()
 
     orders = res.data or []
     for order in orders:
-        items_res = supabase.table("order_items").select(
-            "product_name, product_img, product_cat, item_type, "
-            "price_at_purchase, quantity, line_total"
-        ).eq("order_id", order["id"]).execute()
-        order["items"] = items_res.data or []
+        order["items"] = order.pop("order_items", [])
 
     return {"orders": orders}
 
 
-# ── LẤY LỊCH SỬ ĐĂNG KÝ KHÓA HỌC ───────────────────────────────
+# ── KHÓA HỌC ĐÃ ĐĂNG KÝ ─────────────────────────────────────────
 @router.get("/my/enrollments", summary="Các khóa học đã đăng ký")
 async def get_my_enrollments(current_user: dict = Depends(get_current_user)):
     res = supabase.table("enrollments").select(
@@ -286,10 +308,10 @@ async def get_my_enrollments(current_user: dict = Depends(get_current_user)):
     return {"enrollments": res.data or []}
 
 
-# ── CHI TIẾT 1 ĐƠN HÀNG ─────────────────────────────────────────
+# ── CHI TIẾT 1 ĐƠN HÀNG ──────────────────────────────────────────
 @router.get("/{order_code}", summary="Chi tiết đơn hàng")
 async def get_order_detail(
-    order_code: str,
+    order_code:   str,
     current_user: dict = Depends(get_current_user),
 ):
     res = supabase.table("orders").select("*").eq("order_code", order_code).maybe_single().execute()
@@ -335,14 +357,21 @@ async def admin_get_all_orders(
         "id, order_code, user_id, status, total, receiver_name, "
         "receiver_phone, pay_method, created_at"
     )
-    if status: query = query.eq("status", status)
+    if status:
+        query = query.eq("status", status)
+
     res    = query.order("created_at", desc=True).range(offset, offset + per_page - 1).execute()
     orders = res.data or []
 
     for order in orders:
-        u_res = supabase.table("users").select("username, email").eq("id", order["user_id"]).maybe_single().execute()
+        u_res = supabase.table("users").select("username, email").eq(
+            "id", order["user_id"]
+        ).maybe_single().execute()
         order["user"] = u_res.data or {}
-        i_res = supabase.table("order_items").select("product_name, quantity, price_at_purchase, item_type").eq("order_id", order["id"]).execute()
+
+        i_res = supabase.table("order_items").select(
+            "product_name, quantity, price_at_purchase, item_type"
+        ).eq("order_id", order["id"]).execute()
         order["items"] = i_res.data or []
 
     count_res   = supabase.table("orders").select("id", count="exact").execute()

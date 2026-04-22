@@ -52,7 +52,7 @@ class RegisterRequest(BaseModel):
     email:    EmailStr
     password: str
     phone:    Optional[str] = None
-    dob:      Optional[str] = None   # YYYY-MM-DD
+    dob:      Optional[str] = None   
     gender:   Optional[str] = None
     address:  Optional[str] = None
     role:     str = "customer"
@@ -70,7 +70,13 @@ class RegisterRequest(BaseModel):
         if not re.search(r"(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}", v):
             raise ValueError("Mật khẩu cần ≥8 ký tự, chữ hoa, thường, số và ký tự đặc biệt")
         return v
-
+    @field_validator("phone")
+    @classmethod
+    def check_phone(cls, v):
+        if v and not re.search(r"^(0[1-9]{1}[0-9]{8}|\+84[1-9]{1}[0-9]{8})$", v.strip()):
+            raise ValueError("SĐT không hợp lệ.")
+        return v.strip() if v else None
+    
 class LoginRequest(BaseModel):
     email:    EmailStr
     password: str

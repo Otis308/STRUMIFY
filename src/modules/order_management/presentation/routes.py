@@ -1,55 +1,41 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
+from supabase import create_client, Client
+import os
 
-# Import Use Case và Interface/Class từ các tầng khác
-from ..application.use_cases.create_order import CreateOrderUseCase
-from ..infrastructure.database.order_repo import SupabaseOrderRepository
+from ..application.use_cases import CreateOrderUseCase, CreateOrderRequestDTO, CreateOrderResponseDTO
+from ..domain.repositories import OrderDomainException
+from ..infrastructure.database.order_repo import SupabaseOrderRepository, SupabaseProductRepository
 
-class ItemDTO(BaseModel):
-    product_id: int              # DB là int8
-    product_name: str
-    quantity: int
-    price_at_purchase: float
+router = APIRouter(prefix="/orders", tags=["Order Management"])
 
-class CreateOrderRequest(BaseModel):
-    user_id: int                 # DB là int4
-    receiver_name: str
-    receiver_phone: str
-    receiver_email: Optional[str] = None
-    receiver_address: str
-    note: Optional[str] = None
-    pay_method: str
-    subtotal: int                # DB là int8
-    discount: int = 0
-    ship_fee: int = 0
-    total: int
+# --- Dependency Injection setup ---
+# Trong thực tế, bạn nên đặt hàm này vào một file dependencies.py riêng ở cấp module
+def get_supabase_client() -> Client:
+    url: str = os.environ.get("SUPABASE_URL")
+    key: str = os.environ.get("SUPABASE_KEY")
+    return create_client(url, key)
 
-router = APIRouter()
+def get_create_order_usecase(
+    supabase: Client = Depends(get_supabase_client)
+) -> CreateOrderUseCase:
+    order_repo = SupabaseOrderRepository(supabase)
+    product_repo = SupabaseProductRepository(supabase)
+    return CreateOrderUseCase(order_repo=order_repo, product_repo=product_repo)
 
-def get_create_order_use_case():
-    from supabase import create_client
-    supabase = create_client("SUPABASE_URL", "SUPABASE_KEY")
 
-    repo = SupabaseOrderRepository(supabase)
-    return CreateOrderUseCase(repo)
-
-@router.post("/orders")
+# --- Endpoint ---
+@router.post("/", response_model=CreateOrderResponseDTO, status_code=201)
 def create_order(
-    request: CreateOrderRequest, 
-    use_case: CreateOrderUseCase = Depends(get_create_order_use_case)
+    request: CreateOrderRequestDTO, 
+    use_case: CreateOrderUseCase = Depends(get_create_order_usecase)
 ):
     try:
-        print("Đã nhận data:", request.model_dump())
+        # Trả về kết quả trực tiếp từ Use Case
+        return use_case.execute(request)
         
-        return {
-            "status": "success",
-            "message": "Đơn hàng đã được tạo thành công!",
-            "data": { 
-                "order_id": "OD-12345", 
-                "total": request.total,
-                "receiver": request.receiver_name
-            }
-        }
+    except OrderDomainException as e:
+        # Bắt lỗi Business Logic từ Domain/Application và chuyển thành HTTP 400
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Lỗi hệ thống (database timeout, v.v.)
+        raise HTTPException(status_code=500, detail="Lỗi máy chủ nội bộ. Vui lòng thử lại sau.")

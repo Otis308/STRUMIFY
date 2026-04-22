@@ -63,86 +63,51 @@ def _format_item(row: dict) -> CartItemResponse:
 
 
 # ── GET /cart/ ───────────────────────────────────────────────────
-@router.get("/", summary="Lấy giỏ hàng của user hiện tại")
+@router.get("/", tags=["Cart"])
 async def get_cart(current_user: dict = Depends(get_current_user)):
-    """
-    Trả về toàn bộ sản phẩm trong giỏ hàng của user đang đăng nhập.
-    User A không bao giờ thấy giỏ hàng User B.
-    """
+    """Lấy giỏ hàng hiện tại"""
     res = supabase.table("cart_items").select(
         "id, product_id, quantity, "
-        "products(id, name, product_type, price, image_url, img, cat, badge)"
+        "products(id, name, price, image_url, cat, product_type)" 
     ).eq("user_id", current_user["id"]).execute()
-
-    items      = [_format_item(r) for r in (res.data or [])]
-    subtotal   = sum(i.line_total for i in items)
-    item_count = sum(i.quantity   for i in items)
-
+    
+    formatted_items = [_format_item(row) for row in (res.data or [])]
+    
     return {
-        "items":      [i.model_dump() for i in items],
-        "item_count": item_count,
-        "subtotal":   subtotal,
+        "items": formatted_items,
+        "total": sum(item.quantity for item in formatted_items)
     }
 
-
 # ── POST /cart/add ───────────────────────────────────────────────
-@router.post("/add", summary="Thêm vào giỏ / cộng dồn số lượng (Shopee-style)")
+@router.post("/add", tags=["Cart"])
 async def add_to_cart(
-    body: AddToCartRequest,
+    product_id: int,
+    quantity: int = 1,
     current_user: dict = Depends(get_current_user),
 ):
-    """
-    Logic Shopee:
-    - Nếu sản phẩm ĐÃ có trong giỏ → cộng dồn quantity
-    - Nếu CHƯA có → tạo bản ghi mới
-    Giỏ hàng gắn với user_id → hoàn toàn cách ly giữa các tài khoản.
-    """
-    user_id    = current_user["id"]
-    product_id = body.product_id
-    qty_add    = body.quantity
-
-    # 1. Kiểm tra sản phẩm tồn tại
-    prod_res = supabase.table("products").select(
-        "id, name, price, product_type, is_active"
-    ).eq("id", product_id).maybe_single().execute()
-
-    if not prod_res.data:
-        raise HTTPException(404, detail="Sản phẩm không tồn tại.")
-
-    prod = prod_res.data
-    if prod.get("is_active") is False:
-        raise HTTPException(400, detail="Sản phẩm hiện không còn bán.")
-
-    # 2. Kiểm tra đã có trong giỏ chưa
+    """Thêm sản phẩm vào giỏ"""
+    user_id = current_user["id"]
+    
+    # Kiểm tra sản phẩm đã tồn tại?
     existing = supabase.table("cart_items").select("id, quantity").eq(
         "user_id", user_id
     ).eq("product_id", product_id).maybe_single().execute()
-
+    
     if existing.data:
-        # Cộng dồn số lượng
-        new_qty = existing.data["quantity"] + qty_add
-        supabase.table("cart_items").update(
-            {"quantity": new_qty}
-        ).eq("id", existing.data["id"]).execute()
-
-        return {
-            "action":   "updated",
-            "message":  f"Đã cập nhật số lượng thành {new_qty}",
-            "quantity": new_qty,
-        }
+        # Update quantity
+        new_qty = existing.data["quantity"] + quantity
+        supabase.table("cart_items").update({
+            "quantity": new_qty
+        }).eq("id", existing.data["id"]).execute()
     else:
-        # Thêm mới
+        # Insert mới
         supabase.table("cart_items").insert({
-            "user_id":    user_id,
+            "user_id": user_id,
             "product_id": product_id,
-            "quantity":   qty_add,
+            "quantity": quantity,
         }).execute()
-
-        return {
-            "action":   "added",
-            "message":  f"Đã thêm {prod['name']} vào giỏ hàng",
-            "quantity": qty_add,
-        }
+    
+    return {"status": "success", "message": "Added to cart"}
 
 
 # ── PUT /cart/{item_id} ──────────────────────────────────────────
@@ -179,19 +144,11 @@ async def clear_cart(current_user: dict = Depends(get_current_user)):
 
 
 # ── DELETE /cart/{item_id} ───────────────────────────────────────
-@router.delete("/{item_id}", summary="Xóa 1 sản phẩm khỏi giỏ")
-async def remove_cart_item(
+@router.delete("/{item_id}", tags=["Cart"])
+async def remove_from_cart(
     item_id: int,
     current_user: dict = Depends(get_current_user),
 ):
-    item = supabase.table("cart_items").select("id, user_id").eq(
-        "id", item_id
-    ).maybe_single().execute()
-
-    if not item.data:
-        raise HTTPException(404, detail="Không tìm thấy item.")
-    if item.data["user_id"] != current_user["id"]:
-        raise HTTPException(403, detail="Bạn không có quyền xóa item này.")
-
+    """Xóa sản phẩm khỏi giỏ"""
     supabase.table("cart_items").delete().eq("id", item_id).execute()
-    return {"message": "Đã xóa sản phẩm khỏi giỏ hàng."}
+    return {"status": "success"}
