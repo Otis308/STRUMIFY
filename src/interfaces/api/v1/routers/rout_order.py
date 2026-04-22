@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from src.shared.supabase_client import supabase
 from src.shared.security import get_current_user, require_admin
-from src.infrastructure.services.email_service import send_enrollment_email
+from src.infrastructure.services.email_service import send_student_card_email
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -50,9 +50,7 @@ def _gen_order_code() -> str:
 
 def _gen_student_code() -> str:
     year = datetime.now(timezone.utc).year
-    res  = supabase.table("enrollments").select("id").order("id", desc=True).limit(1).execute()
-    last = res.data[0]["id"] if res.data else 0
-    return f"STU-{year}-{last + 1:05d}"
+    return f"MOC-{year}-{secrets.randbelow(9000) + 1000}"
 
 
 # ── CHECKOUT ─────────────────────────────────────────────────────
@@ -78,7 +76,7 @@ async def checkout(
     cart_res = supabase.table("cart_items").select(
         "id, quantity, product_id, "
         "products(id, name, product_type, price, image_url, img, cat, "
-        "         class_name, schedule, instructor)"
+        "         class_name, schedule, instructor, specs)"
     ).eq("user_id", user_id).execute()
 
     cart_items = cart_res.data or []
@@ -232,13 +230,15 @@ async def checkout(
             background.add_task(
                 _send_enrollment_email_and_update,
                 enrollment_id = enrollment_id,
+                product_id    = item["product_id"],
                 to_email      = to_email,
                 student_name  = student_name,
                 student_code  = student_code,
                 course_name   = p.get("name", ""),
                 class_name    = class_name,
-                schedule      = schedule,
                 instructor    = instructor,
+                schedule      = schedule,
+                specs         = p.get("specs") or {},
             )
 
     return {
@@ -256,23 +256,77 @@ async def checkout(
 
 async def _send_enrollment_email_and_update(
     enrollment_id: int,
+    product_id: int,
     to_email: str,
     student_name: str,
     student_code: str,
     course_name: str,
     class_name: str,
-    schedule: Optional[str],
     instructor: Optional[str],
+    schedule: Optional[str],
+    specs: dict,
 ):
     """Background task: Gửi email → Cập nhật email_sent trong DB."""
-    sent = await send_enrollment_email(
+    # Ưu tiên đọc metadata mới nhất từ DB để email luôn đủ trường.
+    merged_specs = dict(specs or {})
+    try:
+        product_res = supabase.table("products").select(
+            "id, class_name, schedule, instructor, specs"
+        ).eq("id", product_id).maybe_single().execute()
+        product_data = product_res.data or {}
+
+        latest_specs = product_data.get("specs")
+        if isinstance(latest_specs, dict):
+            merged_specs.update(latest_specs)
+
+        if not instructor and product_data.get("instructor"):
+            instructor = product_data.get("instructor")
+        if not class_name and product_data.get("class_name"):
+            class_name = product_data.get("class_name")
+        if not schedule and product_data.get("schedule"):
+            schedule = product_data.get("schedule")
+    except Exception:
+        pass
+
+    # Optional: nếu có bảng course_metadata thì lấy ưu tiên.
+    try:
+        meta_res = supabase.table("course_metadata").select("*").eq(
+            "product_id", product_id
+        ).maybe_single().execute()
+        meta = meta_res.data or {}
+        if isinstance(meta, dict):
+            merged_specs.update(meta)
+    except Exception:
+        pass
+
+    start_date = (
+        merged_specs.get("start_date")
+        or merged_specs.get("start")
+        or merged_specs.get("ngay_khai_giang")
+        or schedule
+    )
+    end_date = (
+        merged_specs.get("end_date")
+        or merged_specs.get("end")
+        or merged_specs.get("ngay_ket_thuc")
+    )
+    location = (
+        merged_specs.get("location")
+        or merged_specs.get("room")
+        or merged_specs.get("classroom")
+        or merged_specs.get("dia_diem")
+    )
+
+    sent = await send_student_card_email(
         to_email     = to_email,
         student_name = student_name,
         student_code = student_code,
         course_name  = course_name,
         class_name   = class_name,
-        schedule     = schedule,
         instructor   = instructor,
+        start_date   = start_date,
+        end_date     = end_date,
+        location     = location,
     )
     if sent:
         supabase.table("enrollments").update({

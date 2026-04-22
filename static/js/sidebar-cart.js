@@ -9,7 +9,26 @@ if (typeof window.CartSidebar === 'undefined') {
       this.isLoggedIn = false;
       this.apiBase    = 'http://127.0.0.1:8000'; 
       this.storageKey = 'strumify_cart';
+      this.couponCode = '';
+      this.discountAmount = 0;
       this.init();
+    }
+
+    getFallbackImage(item = {}) {
+      const cat = String(item.cat || '').toLowerCase();
+      const map = [
+        { key: 'guitar', path: '/static/icons/home_guitar.jpg' },
+        { key: 'violin', path: '/static/icons/home_violin.jpg' },
+        { key: 'piano', path: '/static/icons/home_piano.jpg' },
+        { key: 'drum', path: '/static/icons/home_drum.jpg' },
+        { key: 'flute', path: '/static/icons/home_flute.jpg' },
+        { key: 'ukulele', path: '/static/icons/home_ukulele.jpg' },
+        { key: 'organ', path: '/static/icons/home_organs.jpg' },
+      ];
+      const found = map.find(x => cat.includes(x.key));
+      if (found) return found.path;
+      if (item.product_type === 'course') return '/static/icons/video_course/chant_course.jpg';
+      return '/static/icons/home_guitar.jpg';
     }
 
     /* ── INIT ─────────────────────────────────────────────────────*/
@@ -49,7 +68,7 @@ if (typeof window.CartSidebar === 'undefined') {
           product_id:   item.product_id   || item.id,
           product_name: item.product_name || item.name || '',
           price:        item.price        || 0,
-          image_url:    item.image_url    || item.img  || '',
+          image_url:    item.image_url    || item.img  || this.getFallbackImage(item),
           qty:          item.qty          || item.quantity || 1,
           line_total:   item.line_total   || ((item.price || 0) * (item.qty || item.quantity || 1)),
           product_type: item.product_type || 'product',
@@ -80,7 +99,7 @@ if (typeof window.CartSidebar === 'undefined') {
           product_id:   item.product_id,
           product_name: item.product_name || '',
           price:        item.price        || 0,
-          image_url:    item.image_url    || '',
+          image_url:    item.image_url    || this.getFallbackImage(item),
           qty:          item.quantity     || 1,
           line_total:   item.line_total   || (item.price * item.quantity),
           product_type: item.product_type || 'product',
@@ -99,6 +118,37 @@ if (typeof window.CartSidebar === 'undefined') {
       this.updateBadge();
     }
 
+    getSummary() {
+      const itemsCount = this.cart.reduce((s, x) => s + (x.qty || 1), 0);
+      const subtotal = this.cart.reduce((s, x) => s + (x.line_total || x.price * x.qty), 0);
+      const discount = this.discountAmount > subtotal ? subtotal : this.discountAmount;
+      const shipping = subtotal >= 3000000 || subtotal === 0 ? 0 : 30000;
+      const total = Math.max(0, subtotal - discount + shipping);
+      return { itemsCount, subtotal, discount, shipping, total };
+    }
+
+    applyCoupon() {
+      const input = document.getElementById('sidebarCouponInput');
+      const code = (input?.value || '').trim().toUpperCase();
+      const subtotal = this.cart.reduce((s, x) => s + (x.line_total || x.price * x.qty), 0);
+      if (!code) return;
+
+      if (code === 'MOC10') {
+        this.couponCode = code;
+        this.discountAmount = Math.round(subtotal * 0.1);
+        this.showToast('Áp dụng mã MOC10 thành công', 'success');
+      } else {
+        this.couponCode = '';
+        this.discountAmount = 0;
+        this.showToast('Mã giảm giá không hợp lệ', 'error');
+      }
+      this.renderSidebar();
+    }
+
+    closeSidebar() {
+      this.hideSidebar();
+    }
+
     /* ── ADD ITEM (called from order.js) ─────────────────────────*/
     async addItem(productId, productName, price, imageUrl = null, productType = 'product') {
       const existing = this.cart.find(x => x.product_id === productId);
@@ -111,7 +161,7 @@ if (typeof window.CartSidebar === 'undefined') {
           product_id:   productId,
           product_name: productName,
           price:        price,
-          image_url:    imageUrl,
+          image_url:    imageUrl || this.getFallbackImage({ product_type: productType }),
           qty:          1,
           line_total:   price,
           product_type: productType,
@@ -187,7 +237,7 @@ if (typeof window.CartSidebar === 'undefined') {
       if (!sidebar) return;
 
       const isEmpty = this.cart.length === 0;
-      const total   = this.cart.reduce((s, x) => s + (x.line_total || x.price * x.qty), 0);
+      const summary = this.getSummary();
 
       sidebar.innerHTML = `
         <div class="cart-sidebar-header">
@@ -205,20 +255,35 @@ if (typeof window.CartSidebar === 'undefined') {
 
         ${!isEmpty ? `
           <div class="cart-sidebar-footer">
-            <div class="cart-promo-banner">
-              <i class="fa-solid fa-truck-fast"></i>
-              ${total >= 50_000_000 ? '<span>🎉 Miễn phí vận chuyển!</span>' : `<span>Mua thêm <strong>${this.formatPrice(50_000_000 - total)}</strong> để miễn phí ship</span>`}
+            <div class="sidebar-coupon-row">
+              <input id="sidebarCouponInput" type="text" placeholder="Mã giảm giá (VD: MOC10)"
+                     value="${this.couponCode}" class="sidebar-coupon-input" />
+              <button type="button" onclick="cartSidebarInstance.applyCoupon()"
+                      class="sidebar-coupon-btn">
+                Áp dụng
+              </button>
             </div>
-            <div class="cart-total-row">
-              <span>Tạm tính:</span>
-              <span class="total-price-big">${this.formatPrice(total)}</span>
+
+            <div class="sidebar-price-summary">
+              <div class="sidebar-summary-row"><span>Số lượng sản phẩm:</span><strong>${summary.itemsCount}</strong></div>
+              <div class="sidebar-summary-row"><span>Tạm tính:</span><strong>${this.formatPrice(summary.subtotal)}</strong></div>
+              <div class="sidebar-summary-row sidebar-summary-discount" style="display:${summary.discount > 0 ? 'flex' : 'none'}">
+                <span>Giảm giá:</span><strong>- ${this.formatPrice(summary.discount)}</strong>
+              </div>
+              <div class="sidebar-summary-row"><span>Phí vận chuyển:</span><strong>${summary.shipping === 0 ? 'Miễn phí' : this.formatPrice(summary.shipping)}</strong></div>
+              <div class="sidebar-summary-row sidebar-summary-total">
+                <span><strong>Tổng thanh toán:</strong></span>
+                <strong class="sidebar-summary-total-value">${this.formatPrice(summary.total)}</strong>
+              </div>
             </div>
-            <a href="/cart" class="btn-goto-checkout">
-              <i class="fa-solid fa-lock"></i> Tiến hành thanh toán
+
+            <a href="/cart" class="btn-goto-checkout sidebar-btn-checkout">
+              <i class="fa-solid fa-lock"></i>&nbsp;Thanh toán ngay
             </a>
-            <a href="/order" class="btn-continue-shopping">
-              <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
-            </a>
+            <button type="button" onclick="cartSidebarInstance.closeSidebar()"
+                    class="btn-continue-shopping sidebar-btn-continue">
+              <i class="fa-solid fa-arrow-left"></i>&nbsp;Tiếp tục mua sắm
+            </button>
           </div>
         ` : ''}
       `;
@@ -254,28 +319,24 @@ if (typeof window.CartSidebar === 'undefined') {
       return `
         <div class="cart-items-list">
           ${this.cart.map((item, idx) => `
-            <div class="cart-item-row" id="cartRow${idx}">
-              <div class="item-img-wrap">
-                ${item.image_url
-                  ? `<img src="${item.image_url}" alt="${item.product_name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-                  : ''}
-                <div class="item-img-placeholder" style="${item.image_url ? 'display:none' : ''}">
-                  <i class="fa-solid ${item.product_type === 'course' ? 'fa-graduation-cap' : 'fa-guitar'}"></i>
+            <div class="cart-item-card" id="cartRow${idx}">
+              ${item.image_url
+                ? `<img class="item-thumb" src="${item.image_url}" alt="${item.product_name}" loading="lazy"
+                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                : ''}
+              <div class="item-thumb item-thumb-placeholder" style="${item.image_url ? 'display:none' : 'display:flex'}">
+                <i class="fa-solid ${item.product_type === 'course' ? 'fa-graduation-cap' : 'fa-guitar'}"></i>
+              </div>
+              <div class="item-info">
+                <div class="item-name" title="${item.product_name || ''}">${item.product_name || 'Sản phẩm'}</div>
+                <div class="item-price">
+                  <strong>${this.formatPrice(item.line_total || item.price * item.qty)}</strong>
+                  <span> × ${item.qty || 1}</span>
                 </div>
               </div>
-              <div class="item-details">
-                <div class="item-type-tag ${item.product_type === 'course' ? 'tag-course' : 'tag-product'}">
-                  ${item.product_type === 'course' ? 'Khóa học' : (item.cat || 'Sản phẩm')}
-                </div>
-                <div class="item-name-text" title="${item.product_name}">${item.product_name}</div>
-                <div class="item-unit">${this.formatPrice(item.price)} × ${item.qty}</div>
-              </div>
-              <div class="item-actions-col">
-                <div class="item-subtotal">${this.formatPrice(item.line_total || item.price * item.qty)}</div>
-                <button class="btn-remove-item" onclick="cartSidebarInstance.removeItem(${idx}, ${item.id || 'null'})" title="Xóa">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
+              <button class="btn-remove" onclick="cartSidebarInstance.removeItem(${idx}, ${item.id || 'null'})" title="Xóa">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
           `).join('')}
         </div>

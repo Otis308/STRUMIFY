@@ -722,6 +722,32 @@ html {
   font-size: 15px;
 }
 
+/* Product modal visibility */
+#productModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+#productModal.active {
+  display: flex;
+}
+#modalBody {
+  width: min(980px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+}
+
 /* ── CART SIDEBAR ─────────────────────────────── */
 .cart-sidebar {
   position: fixed;

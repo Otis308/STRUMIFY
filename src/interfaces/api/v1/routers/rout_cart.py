@@ -11,7 +11,10 @@ Endpoints:
 """
 from __future__ import annotations
 
-from typing import List, Optional
+import json
+import time
+from pathlib import Path
+from typing import List, Optional, Literal
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends
 from pydantic import BaseModel, Field
@@ -21,11 +24,33 @@ from src.shared.security import get_current_user
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
+_PROJECT_ROOT = Path(__file__).resolve().parents[5]
+_DEBUG_LOG_PATH = str(_PROJECT_ROOT / "debug-368463.log")
+_DEBUG_SESSION_ID = "368463"
+
+
+def _dbg_log(*, run_id: str, hypothesis_id: str, location: str, message: str, data: dict) -> None:
+    try:
+        payload = {
+            "sessionId": _DEBUG_SESSION_ID,
+            "runId": run_id,
+            "hypothesisId": hypothesis_id,
+            "location": location,
+            "message": message,
+            "data": data,
+            "timestamp": int(time.time() * 1000),
+        }
+        with open(_DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
 
 # ── SCHEMAS ──────────────────────────────────────────────────────
 class AddToCartRequest(BaseModel):
     product_id: int
     quantity:   int = Field(default=1, ge=1, le=100)
+    product_type: Optional[Literal["product", "course"]] = None
 
 
 class UpdateCartItemRequest(BaseModel):
@@ -81,33 +106,110 @@ async def get_cart(current_user: dict = Depends(get_current_user)):
 # ── POST /cart/add ───────────────────────────────────────────────
 @router.post("/add", tags=["Cart"])
 async def add_to_cart(
-    product_id: int,
-    quantity: int = 1,
+    body: AddToCartRequest,
     current_user: dict = Depends(get_current_user),
 ):
     """Thêm sản phẩm vào giỏ"""
     user_id = current_user["id"]
-    
-    # Kiểm tra sản phẩm đã tồn tại?
-    existing = supabase.table("cart_items").select("id, quantity").eq(
-        "user_id", user_id
-    ).eq("product_id", product_id).maybe_single().execute()
-    
-    if existing.data:
-        # Update quantity
-        new_qty = existing.data["quantity"] + quantity
-        supabase.table("cart_items").update({
-            "quantity": new_qty
-        }).eq("id", existing.data["id"]).execute()
-    else:
-        # Insert mới
-        supabase.table("cart_items").insert({
+    product_id = body.product_id
+    quantity = body.quantity
+
+    # #region agent log
+    _dbg_log(
+        run_id="pre-fix",
+        hypothesis_id="B1",
+        location="rout_cart.py:add_to_cart:entry",
+        message="Add to cart request parsed",
+        data={
             "user_id": user_id,
             "product_id": product_id,
             "quantity": quantity,
-        }).execute()
+        },
+    )
+    # #endregion
     
-    return {"status": "success", "message": "Added to cart"}
+    try:
+        product_res = supabase.table("products").select("id, product_type").eq(
+            "id", product_id
+        ).maybe_single().execute()
+        product_data = product_res.data or {}
+        if not product_data:
+            raise HTTPException(status_code=404, detail="Sản phẩm/khóa học không tồn tại.")
+
+        db_product_type = (product_data.get("product_type") or "product").lower()
+        if body.product_type and body.product_type != db_product_type:
+            raise HTTPException(
+                status_code=400,
+                detail="Loại sản phẩm không hợp lệ với dữ liệu hệ thống.",
+            )
+
+        # Kiểm tra sản phẩm đã tồn tại?
+        existing = supabase.table("cart_items").select("id, quantity").eq(
+            "user_id", user_id
+        ).eq("product_id", product_id).maybe_single().execute()
+        existing_data = getattr(existing, "data", None) if existing is not None else None
+
+        # #region agent log
+        _dbg_log(
+            run_id="pre-fix",
+            hypothesis_id="B2",
+            location="rout_cart.py:add_to_cart:existing",
+            message="Existing cart item lookup",
+            data={
+                "existing_type": type(existing).__name__ if existing is not None else None,
+                "has_data": bool(getattr(existing, "data", None)),
+                "data_keys": sorted(list(existing_data.keys())) if isinstance(existing_data, dict) else None,
+            },
+        )
+        # #endregion
+
+        if isinstance(existing_data, dict) and existing_data:
+            # Update quantity
+            new_qty = int(existing_data.get("quantity") or 0) + quantity
+            upd = supabase.table("cart_items").update({
+                "quantity": new_qty
+            }).eq("id", existing_data["id"]).execute()
+
+            # #region agent log
+            _dbg_log(
+                run_id="pre-fix",
+                hypothesis_id="B3",
+                location="rout_cart.py:add_to_cart:update",
+                message="Updated cart item quantity",
+                data={"updated_rows": len(upd.data or [])},
+            )
+            # #endregion
+        else:
+            ins = supabase.table("cart_items").insert({
+                "user_id": user_id,
+                "product_id": product_id,
+                "quantity": quantity,
+            }).execute()
+
+            # #region agent log
+            _dbg_log(
+                run_id="pre-fix",
+                hypothesis_id="B4",
+                location="rout_cart.py:add_to_cart:insert",
+                message="Inserted cart item",
+                data={"inserted_rows": len(ins.data or [])},
+            )
+            # #endregion
+
+        return {"status": "success", "message": "Added to cart"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        # #region agent log
+        _dbg_log(
+            run_id="pre-fix",
+            hypothesis_id="B5",
+            location="rout_cart.py:add_to_cart:exception",
+            message="Unhandled exception in /cart/add",
+            data={"error": str(e), "error_type": type(e).__name__},
+        )
+        # #endregion
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 # ── PUT /cart/{item_id} ──────────────────────────────────────────

@@ -3,10 +3,7 @@
   rel="stylesheet"
   href="{{ url_for('static', path='css/order.css') }}?v=1.1"
 />
-{% endblock %} {% block content %} {# ── Map danh mục → file ảnh hải lí linh vật
-── #} {% set MASCOT = { 'Guitar': 'guitar.png', 'Violin': 'vioin.png', 'Piano':
-'piano.png', 'Drum': 'drum.png', 'Flute': 'flute.png', 'Organ': 'organ.png',
-'Ukulele': 'ukulele.png', 'Khác': 'harp.png' } %}
+{% endblock %} {% block content %}
 
 <div class="main-container">
   <h1 class="page-title">SẢN PHẨM STRUMIFY</h1>
@@ -89,28 +86,12 @@
 
   <!-- ── PRODUCTS GRID ── -->
   <div class="products-section" id="productsSection">
-    {% if guitars %} {% for product in products %}
+    {% if products %} {% for product in products %}
     <div
       class="product-card"
       data-id="{{ product.id }}"
       data-category="{{ product.cat }}"
     >
-      <div class="mascot-corner">
-        {% if MASCOT[product.cat] %}
-        <img
-          class="mascot-img"
-          src="{{ url_for('static', path='icons/mascot/' + MASCOT[product.cat]) }}"
-          alt="Mascot"
-        />
-        {% else %}
-        <img
-          class="mascot-img"
-          src="{{ url_for('static', path='icons/mascot/guitar.png') }}"
-          alt="Mascot"
-        />
-        {% endif %}
-      </div>
-
       <div class="product-image-container">
         <div class="product-image">
           <img
@@ -342,7 +323,6 @@
 
   console.log("Đã tải " + PRODUCT_DATA.length + " sản phẩm.");
 </script>
-<script src="{{ url_for('static', path='js/order.js') }}"></script>
 
 {% endblock %} {% block custom_js %}
 <script src="{{ url_for('static', path='js/sidebar-cart.js') }}"></script>

@@ -4,14 +4,19 @@ FIX: Removed all duplicate router registrations, duplicate static mounts,
      duplicate ChatRequest model, and cleaned import order.
 """
 import os
+import json
+import time
 from pathlib import Path
 
 import requests
 import uvicorn
 from fastapi import FastAPI, Response
+from fastapi import Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
 from google import genai
 from pydantic import BaseModel
 from src.shared.supabase_client import create_client
@@ -31,6 +36,26 @@ app = FastAPI(title="Strumify API", version="2.0.0")
 
 BASE_DIR = Path(__file__).resolve().parent
 
+_DEBUG_LOG_PATH = "debug-368463.log"
+_DEBUG_SESSION_ID = "368463"
+
+
+def _dbg_log(*, run_id: str, hypothesis_id: str, location: str, message: str, data: dict) -> None:
+    try:
+        payload = {
+            "sessionId": _DEBUG_SESSION_ID,
+            "runId": run_id,
+            "hypothesisId": hypothesis_id,
+            "location": location,
+            "message": message,
+            "data": data,
+            "timestamp": int(time.time() * 1000),
+        }
+        with open(str(BASE_DIR / _DEBUG_LOG_PATH), "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
 # ── CORS ─────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +64,114 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def _debug_request_logger(request: Request, call_next):
+    # #region agent log
+    start = time.time()
+    path = request.url.path
+    method = request.method
+    # #endregion
+    # #region agent log
+    if path.startswith("/cart/add") or path.startswith("/cart/"):
+        _dbg_log(
+            run_id="pre-fix",
+            hypothesis_id="M0",
+            location="main.py:middleware",
+            message="Incoming request for cart endpoints",
+            data={"method": method, "path": path, "query": dict(request.query_params)},
+        )
+    # #endregion
+    try:
+        response = await call_next(request)
+        # #region agent log
+        if path.startswith("/cart/add") or path.startswith("/cart/"):
+            _dbg_log(
+                run_id="pre-fix",
+                hypothesis_id="M1",
+                location="main.py:middleware",
+                message="Request/response trace for cart endpoints",
+                data={
+                    "method": method,
+                    "path": path,
+                    "status": getattr(response, "status_code", None),
+                    "ms": int((time.time() - start) * 1000),
+                    "content_type": response.headers.get("content-type") if hasattr(response, "headers") else None,
+                },
+            )
+        # #endregion
+        return response
+    except Exception as e:
+        # #region agent log
+        if path.startswith("/cart/add") or path.startswith("/cart/"):
+            _dbg_log(
+                run_id="pre-fix",
+                hypothesis_id="M2",
+                location="main.py:middleware",
+                message="Unhandled exception bubbled through middleware",
+                data={
+                    "method": method,
+                    "path": path,
+                    "ms": int((time.time() - start) * 1000),
+                    "error_type": type(e).__name__,
+                    "error": str(e),
+                },
+            )
+        # #endregion
+        raise
+
+
+@app.on_event("startup")
+async def _debug_startup_ping():
+    # #region agent log
+    _dbg_log(
+        run_id="pre-fix",
+        hypothesis_id="BOOT",
+        location="main.py:startup",
+        message="Debug logger startup ping",
+        data={"base_dir": str(BASE_DIR)},
+    )
+    # #endregion
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # #region agent log
+    body_keys = None
+    body_len = None
+    body_parse_err = None
+    try:
+        raw = await request.body()
+        body_len = len(raw or b"")
+        try:
+            parsed = json.loads(raw.decode("utf-8")) if raw else None
+            if isinstance(parsed, dict):
+                body_keys = sorted(list(parsed.keys()))
+            elif parsed is not None:
+                body_keys = ["_non_dict_json"]
+        except Exception as e:
+            body_parse_err = str(e)
+    except Exception as e:
+        body_parse_err = str(e)
+
+    _dbg_log(
+        run_id="pre-fix",
+        hypothesis_id="H0",
+        location="main.py:RequestValidationError",
+        message="Request validation failed before reaching handler",
+        data={
+            "method": request.method,
+            "path": request.url.path,
+            "query": dict(request.query_params),
+            "content_type": request.headers.get("content-type"),
+            "body_len": body_len,
+            "body_keys": body_keys,
+            "body_parse_err": body_parse_err,
+            "errors": exc.errors(),
+        },
+    )
+    # #endregion
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 # ── Static Files (mounted ONCE, conditionally) ────────────────────
 static_dir = BASE_DIR / "static"

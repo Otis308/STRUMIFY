@@ -40,6 +40,7 @@ def normalize_product(p: dict) -> dict:
     p["orig"]    = float(p["orig"])   if p.get("orig")     is not None else None
     p["rating"]  = float(p["rating"]) if p.get("rating")   is not None else None
     p["reviews"] = int(p["reviews"])  if p.get("reviews")  is not None else 0
+    p["product_type"] = clean(p.get("product_type")) or "product"
 
     return p
 
@@ -57,7 +58,7 @@ async def get_products(
 ):
     query = supabase.table("products").select(
         "id, name, description, cat, brand, badge, "
-        "price, orig, image_url, img, rating, reviews, specs, created_at"
+        "price, orig, image_url, img, rating, reviews, specs, product_type, created_at"
     )
 
     if cat:       query = query.eq("cat", cat)

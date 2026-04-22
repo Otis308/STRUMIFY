@@ -244,6 +244,97 @@
   flex-shrink: 0;
 }
 
+.sidebar-coupon-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sidebar-coupon-input {
+  flex: 1;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 13px;
+}
+
+.sidebar-coupon-input:focus {
+  border-color: #c9922a;
+  box-shadow: 0 0 0 2px rgba(201, 146, 42, 0.14);
+}
+
+.sidebar-coupon-btn {
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #5c3d22;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sidebar-coupon-btn:hover {
+  filter: brightness(1.08);
+}
+
+.sidebar-price-summary {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 14px 0;
+  font-size: 14px;
+}
+
+.sidebar-summary-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sidebar-summary-discount {
+  color: #2e8b57;
+}
+
+.sidebar-summary-total {
+  font-size: 16px;
+  padding-top: 8px;
+  border-top: 1px solid #ead9c4;
+}
+
+.sidebar-summary-total-value {
+  color: #c9922a;
+}
+
+.sidebar-btn-checkout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: #5c3d22;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sidebar-btn-continue {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #d9c9b8;
+  background: #fff;
+  color: #5c3d22;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sidebar-btn-continue:hover {
+  background: #fdf6ee;
+}
+
 .cart-total {
   display: flex;
   justify-content: space-between;

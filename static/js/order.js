@@ -54,7 +54,12 @@
   }
   function _getProductData(id) {
     if (typeof PRODUCT_DATA === 'undefined') return null;
-    return PRODUCT_DATA.find(p => p.id === Number(id)) || null;
+    const target = Number(id);
+    return PRODUCT_DATA.find((p) => {
+      const pid = Number(p.id);
+      if (!Number.isNaN(target) && !Number.isNaN(pid)) return pid === target;
+      return String(p.id) === String(id);
+    }) || null;
   }
 
   /* ================================================================
@@ -213,10 +218,24 @@
         body:    JSON.stringify({ product_id: productId, quantity: 1 }),
       });
 
-      const data = await res.json();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/dbca24f3-a3f9-4862-a266-6b2c853c41b6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'368463'},body:JSON.stringify({sessionId:'368463',runId:'pre-fix',hypothesisId:'F1',location:'order.js:addToCart:afterFetch',message:'Response metadata from /cart/add',data:{status:res.status,ok:res.ok,contentType:res.headers.get('content-type')||'',productId},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+
+      const contentType = (res.headers.get('content-type') || '').toLowerCase();
+      const rawText = await res.text();
+      let data = {};
+      if (contentType.includes('application/json')) {
+        try { data = rawText ? JSON.parse(rawText) : {}; } catch { data = {}; }
+      }
+
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/dbca24f3-a3f9-4862-a266-6b2c853c41b6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'368463'},body:JSON.stringify({sessionId:'368463',runId:'pre-fix',hypothesisId:'F2',location:'order.js:addToCart:parseBody',message:'Parsed body from /cart/add',data:{isJson:contentType.includes('application/json'),textPrefix:(rawText||'').slice(0,80)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
 
       if (!res.ok) {
-        showToast(data.detail || 'Không thể thêm vào giỏ hàng', 'err');
+        const msg = (data && (data.detail || data.message)) || rawText || 'Không thể thêm vào giỏ hàng';
+        showToast(msg, 'err');
         return;
       }
 
@@ -307,6 +326,11 @@
   const body  = document.getElementById('modalBody');
   if (!modal || !body) return;
 
+  if (!pData) {
+    showToast('Không tìm thấy dữ liệu sản phẩm', 'err');
+    return;
+  }
+
   if (pData) {
     // Xây dựng HTML specs
     let specsHTML = '';
@@ -320,11 +344,15 @@
             <h4 class="specs-title"><i class="fa-solid fa-list-check"></i> Thông Số Kỹ Thuật</h4>
             <div class="specs-grid">
               ${specsEntries.map(([k, v]) => {
-                const label = specsTranslation[k.toUpperCase()] || k;
-                specsBox.innerHTML += `<div class="spec-item"><strong>${label}:</strong> ${v}</div>`;
+                const upper = String(k || '').toUpperCase();
+                const label = (typeof specsTranslation !== 'undefined'
+                  && specsTranslation
+                  && specsTranslation[upper])
+                  ? specsTranslation[upper]
+                  : k;
                 return `
                   <div class="spec-row">
-                    <span class="spec-label">${labelVI}</span>
+                    <span class="spec-label">${label}</span>
                     <span class="spec-value">${v}</span>
                   </div>`;
               }).join('')}
@@ -383,11 +411,15 @@
       ${specsHTML}
     `;
   }
+  modal.style.display = 'flex';
   modal.classList.add('active');
 };
 
   window.closeModal = function() {
-    document.getElementById('productModal')?.classList.remove('active');
+    const m = document.getElementById('productModal');
+    if (!m) return;
+    m.classList.remove('active');
+    setTimeout(() => { m.style.display = 'none'; }, 200);
   };
   window.handleModalOverlayClick = function(e) {
     if (e.target.id === 'productModal') window.closeModal();

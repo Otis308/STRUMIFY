@@ -45,22 +45,24 @@ async function loadUserInfo() {
   if (!getToken()) return; // Nếu chưa đăng nhập thì thôi
   
   try {
-    const res = await fetch(`${API_BASE}/users/me`, { headers: getHeaders() });
+    const res = await fetch(`${API_BASE}/profile/me`, { headers: getHeaders() });
     if (!res.ok) return;
-    const user = await res.json();
+    const payload = await res.json();
+    const user = payload?.user || payload || {};
 
     // 1. Cập nhật Tên và Email ở Sidebar & TopNav
-    document.querySelectorAll('.sidebar-name, .topnav-name').forEach(el => el.textContent = user.full_name || 'Khách hàng MỘC');
+    const displayName = user.full_name || user.username || 'Khách hàng MỘC';
+    document.querySelectorAll('.sidebar-name, .topnav-name').forEach(el => el.textContent = displayName);
     document.querySelectorAll('.sidebar-nickname').forEach(el => el.textContent = user.email || '');
 
     // 2. Cập nhật vào Form thông tin cá nhân (Cần có ID ở HTML)
     const inputName = document.getElementById('profileName');
     const inputEmail = document.getElementById('profileEmail');
-    if (inputName) inputName.value = user.full_name || '';
+    if (inputName) inputName.value = displayName || '';
     if (inputEmail) inputEmail.value = user.email || '';
 
     // Lấy chữ cái đầu làm Avatar
-    const avatarInitials = (user.full_name || 'M').charAt(0).toUpperCase();
+    const avatarInitials = (displayName || 'M').charAt(0).toUpperCase();
     document.querySelectorAll('.avatar-ring img').forEach(el => {
       el.style.display = 'none'; // Ẩn ảnh mẫu đi
     });

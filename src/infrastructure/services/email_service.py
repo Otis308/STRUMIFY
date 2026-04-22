@@ -13,26 +13,18 @@ from typing import Optional
 
 
 # ── EMAIL TEMPLATE HTML ──────────────────────────────────────────
-def build_enrollment_email(
+def build_student_card_email(
     student_name:   str,
     student_code:   str,
     course_name:    str,
     class_name:     str,
-    schedule:       Optional[str],
     instructor:     Optional[str],
+    start_date:     Optional[str],
+    end_date:       Optional[str],
+    location:       Optional[str],
 ) -> str:
-    """Trả về nội dung HTML của email xác nhận đăng ký khóa học."""
-    schedule_row = f"""
-        <div class="info-row">
-          <span class="info-label">Lịch học</span>
-          <span class="info-value">{schedule or 'Sẽ thông báo sau'}</span>
-        </div>""" if schedule else ""
-
-    instructor_row = f"""
-        <div class="info-row">
-          <span class="info-label">Giảng viên</span>
-          <span class="info-value">{instructor or 'Sẽ thông báo sau'}</span>
-        </div>""" if instructor else ""
+    """Template HTML thẻ học viên điện tử."""
+    date_range = f"{start_date or 'Sẽ thông báo'} — {end_date or 'Sẽ thông báo'}"
 
     base_url = os.getenv("APP_BASE_URL", "https://strumify.vn")
 
@@ -42,7 +34,7 @@ def build_enrollment_email(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xác nhận đăng ký khóa học – STRUMIFY</title>
+  <title>Thẻ Học Viên Điện Tử – MOC Guitar</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{ font-family: 'Nunito', 'Segoe UI', Arial, sans-serif; background: #f5ede4; padding: 32px 16px; }}
@@ -53,7 +45,7 @@ def build_enrollment_email(
       padding: 32px 28px 24px;
       text-align: center;
     }}
-    .brand {{ color: #f5e4c0; font-size: 28px; font-weight: 900; letter-spacing: 3px; }}
+    .brand {{ color: #f5e4c0; font-size: 28px; font-weight: 900; letter-spacing: 2px; }}
     .header-sub {{ color: rgba(245,228,192,.7); font-size: 13px; margin-top: 4px; }}
     .body {{
       background: #fff;
@@ -135,10 +127,7 @@ def build_enrollment_email(
 
     <div class="body">
       <p class="greeting">Xin chào <strong>{student_name}</strong>,</p>
-      <p class="subtitle">
-        Chúc mừng bạn đã đăng ký thành công khóa học tại STRUMIFY!
-        Dưới đây là thông tin của bạn. Vui lòng lưu lại để thuận tiện trong quá trình học.
-      </p>
+      <p class="subtitle">Đăng ký khóa học thành công. Đây là thẻ học viên điện tử của bạn tại MOC Guitar.</p>
 
       <!-- Mã học viên -->
       <div class="student-code-box">
@@ -146,28 +135,36 @@ def build_enrollment_email(
         <div class="student-code">{student_code}</div>
       </div>
 
-      <!-- Thông tin khóa học -->
       <div class="info-card">
-        <div class="info-card-header">📋 Thông tin đăng ký</div>
+        <div class="info-card-header">THẺ HỌC VIÊN ĐIỆN TỬ</div>
         <div class="info-row">
-          <span class="info-label">Học viên</span>
+          <span class="info-label">Tên học viên</span>
           <span class="info-value">{student_name}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Khóa học</span>
-          <span class="info-value">{course_name}</span>
+          <span class="info-label">Mã số HV</span>
+          <span class="info-value">{student_code}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Lớp học</span>
-          <span class="info-value">{class_name}</span>
+          <span class="info-label">Tên lớp học</span>
+          <span class="info-value">{class_name or course_name}</span>
         </div>
-        {schedule_row}
-        {instructor_row}
+        <div class="info-row">
+          <span class="info-label">Giảng viên</span>
+          <span class="info-value">{instructor or 'Sẽ thông báo sau'}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Khai giảng - Kết thúc</span>
+          <span class="info-value">{date_range}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Địa điểm/Phòng</span>
+          <span class="info-value">{location or 'Sẽ thông báo sau'}</span>
+        </div>
       </div>
 
-      <!-- CTA -->
       <a href="{base_url}/profile#enrollments" class="cta-btn">
-        Xem lịch học & tài liệu →
+        Mở hồ sơ học viên →
       </a>
 
       <p class="note">
@@ -178,7 +175,7 @@ def build_enrollment_email(
     </div>
 
     <div class="footer">
-      © 2026 STRUMIFY Instrument · 123 Lê Duẩn, Quận 1, TP.HCM<br>
+      © 2026 MOC Guitar Academy · 123 Lê Duẩn, Quận 1, TP.HCM<br>
       <a href="{base_url}/unsubscribe" style="color:#c9922a;text-decoration:none">Hủy đăng ký email</a>
     </div>
   </div>
@@ -187,14 +184,16 @@ def build_enrollment_email(
 
 
 # ── SEND FUNCTION ────────────────────────────────────────────────
-async def send_enrollment_email(
+async def send_student_card_email(
     to_email:       str,
     student_name:   str,
     student_code:   str,
     course_name:    str,
     class_name:     str,
-    schedule:       Optional[str] = None,
     instructor:     Optional[str] = None,
+    start_date:     Optional[str] = None,
+    end_date:       Optional[str] = None,
+    location:       Optional[str] = None,
 ) -> bool:
     """
     Gửi email xác nhận đăng ký khóa học.
@@ -223,17 +222,19 @@ async def send_enrollment_email(
             USE_CREDENTIALS = True,
         )
 
-        html_body = build_enrollment_email(
+        html_body = build_student_card_email(
             student_name  = student_name,
             student_code  = student_code,
             course_name   = course_name,
             class_name    = class_name,
-            schedule      = schedule,
             instructor    = instructor,
+            start_date    = start_date,
+            end_date      = end_date,
+            location      = location,
         )
 
         message = MessageSchema(
-            subject    = f"[STRUMIFY] Xác nhận đăng ký khóa học – Mã học viên {student_code}",
+            subject    = f"[MOC Guitar] Thẻ Học Viên Điện Tử – {student_code}",
             recipients = [to_email],
             body       = html_body,
             subtype    = MessageType.html,
@@ -247,3 +248,26 @@ async def send_enrollment_email(
     except Exception as e:
         print(f"[EMAIL ERROR] {to_email}: {e}")
         return False
+
+
+async def send_enrollment_email(
+    to_email:       str,
+    student_name:   str,
+    student_code:   str,
+    course_name:    str,
+    class_name:     str,
+    schedule:       Optional[str] = None,
+    instructor:     Optional[str] = None,
+) -> bool:
+    """Backward-compatible wrapper."""
+    return await send_student_card_email(
+        to_email=to_email,
+        student_name=student_name,
+        student_code=student_code,
+        course_name=course_name,
+        class_name=class_name,
+        instructor=instructor,
+        start_date=schedule,
+        end_date=None,
+        location=None,
+    )
