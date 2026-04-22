@@ -7,7 +7,7 @@ if (typeof window.CartSidebar === 'undefined') {
       this.cart       = [];
       this.isOpen     = false;
       this.isLoggedIn = false;
-      this.apiBase    = 'http://127.0.0.1:8000'; 
+      this.apiBase    = ''; 
       this.storageKey = 'strumify_cart';
       this.couponCode = '';
       this.discountAmount = 0;
