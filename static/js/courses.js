@@ -5,7 +5,7 @@ const COURSE_LIST = [
     { 
         cat: "Guitar", 
         title: "Guitar Cổ điển & Hiện đại", 
-        desc: "Kỹ thuật giải thể hình ngón, diễn tấu tác phẩm trung cấp và đệm hát chuyên sâu.", 
+        desc: "Học ngón tay linh hoạt, đệm hát mượt mà và chinh phục những bản nhạc bạn yêu thích — từ dân ca đến pop hiện đại.", 
         time: "9 tháng", 
         students: "12 học viên", 
         rate: 5.0, 
@@ -14,7 +14,7 @@ const COURSE_LIST = [
     { 
         cat: "Violin", 
         title: "Nghệ thuật diễn tấu Violin", 
-        desc: "Kỹ thuật kéo vĩ (Bowing), kiểm soát sắc thái và tư thế đứng chuẩn học thuật.", 
+        desc: "Làm chủ cây vĩ, cảm nhận từng sắc thái âm thanh và tự tin trình diễn trước khán giả với tư thế chuẩn học thuật.", 
         time: "1 năm", 
         students: "10 học viên", 
         rate: 4.8, 
@@ -23,7 +23,7 @@ const COURSE_LIST = [
     { 
         cat: "Piano", 
         title: "Piano – Hệ thống kỹ thuật ngón", 
-        desc: "Làm chủ phím đàn, lý thuyết âm nhạc và diễn giải tác phẩm đa phong cách.", 
+        desc: "Từ những nốt nhạc đầu tiên đến tác phẩm hoàn chỉnh — xây dựng nền tảng vững chắc để chơi bất kỳ thể loại nào bạn muốn.", 
         time: "1 năm", 
         students: "15 học viên", 
         rate: 5.0, 
@@ -32,7 +32,7 @@ const COURSE_LIST = [
     { 
         cat: "Dân gian", 
         title: "Nhạc khí truyền thống Việt Nam", 
-        desc: "Nghiên cứu lòng bản và kỹ thuật đặc trưng của đàn Tranh, đàn Bầu chuyên nghiệp.", 
+        desc: "Chạm đến hồn nhạc dân tộc qua tiếng đàn Tranh, đàn Bầu — gìn giữ di sản âm nhạc Việt theo cách sống động nhất.", 
         time: "9 tháng", 
         students: "12 học viên", 
         rate: 5.0, 
@@ -41,7 +41,7 @@ const COURSE_LIST = [
     { 
         cat: "Drum", 
         title: "Bộ gõ & Tiết tấu chuyên sâu", 
-        desc: "Kỹ thuật cầm dùi, phối hợp tứ chi và tư duy giữ nhịp trong dàn nhạc.", 
+        desc: "Cảm nhận nhịp điệu bằng cả cơ thể, phối hợp tay chân nhịp nhàng và trở thành trụ cột giữ nhịp cho ban nhạc.", 
         time: "6 tháng", 
         students: "10 học viên", 
         rate: 4.9, 
@@ -50,27 +50,25 @@ const COURSE_LIST = [
     { 
         cat: "Flute", 
         title: "Sáo Flute & Nghệ thuật hơi thở", 
-        desc: "Kỹ thuật khẩu hình, lấy hơi và xử lý sắc thái tinh tế trong hòa tấu.", 
+        desc: "Học cách biến hơi thở thành âm thanh — tinh tế, trong trẻo và biểu cảm như chính cảm xúc bạn muốn truyền tải.", 
         time: "6 tháng", 
         students: "8 học viên", 
         rate: 4.7, 
         video: "/static/icons/video_course/flute_course.mp4"
- 
     },
     { 
         cat: "Ukulele", 
         title: "Ukulele & Nhạc lý ứng dụng", 
-        desc: "Hành trình nhập môn nhạc cụ dây và xây dựng nền tảng cảm thụ âm nhạc.", 
+        desc: "Khởi đầu hành trình âm nhạc thật vui và dễ dàng — chỉ vài tuần là bạn có thể tự đệm và hát những bài yêu thích.", 
         time: "3 tháng", 
         students: "18 học viên", 
         rate: 4.9, 
         video: "/static/icons/video_course/ukulele_course.mp4"
- 
     },
     { 
         cat: "Organ", 
         title: "Thủ pháp biểu diễn Keyboard", 
-        desc: "Làm chủ các tính năng phức hợp và kỹ năng độc tấu chuyên nghiệp trên Organ.", 
+        desc: "Khai thác toàn bộ sức mạnh của cây đàn Organ — từ phối âm phong phú đến độc tấu chuyên nghiệp trên sân khấu.", 
         time: "9 tháng", 
         students: "12 học viên", 
         rate: 4.8, 
@@ -79,7 +77,7 @@ const COURSE_LIST = [
     { 
         cat: "Ca hát", 
         title: "Nghệ thuật Ca hát & Biểu diễn", 
-        desc: "Giải phóng hình thể, cải thiện giọng hát và định hình phong cách sân khấu.", 
+        desc: "Tìm lại giọng hát thật sự của bạn — tự tin đứng trên sân khấu, hát đúng kỹ thuật và truyền cảm xúc đến người nghe.", 
         time: "6 tháng", 
         students: "20 học viên", 
         rate: 4.6, 
@@ -88,7 +86,7 @@ const COURSE_LIST = [
     { 
         cat: "Thanh nhạc", 
         title: "Thanh nhạc Cổ điển chuyên sâu", 
-        desc: "Kỹ thuật cộng minh, nén hơi và xử lý tác phẩm theo chuẩn thính phòng.", 
+        desc: "Rèn luyện giọng hát chuẩn học thuật — kiểm soát hơi thở, cộng minh âm thanh và chinh phục các tác phẩm thính phòng đỉnh cao.", 
         time: "1 năm", 
         students: "8 học viên", 
         rate: 5.0, 
@@ -97,7 +95,7 @@ const COURSE_LIST = [
     { 
         cat: "Nhạc lí", 
         title: "Lý thuyết âm nhạc tổng quát", 
-        desc: "Hệ thống ký hiệu, cấu tạo âm giai và quãng từ cơ bản đến nâng cao.", 
+        desc: "Hiểu \"ngôn ngữ\" đằng sau mọi bản nhạc — học cách đọc, viết và cảm nhận âm nhạc một cách có hệ thống từ gốc rễ.", 
         time: "4 tháng", 
         students: "25 học viên", 
         rate: 4.9, 
@@ -105,8 +103,8 @@ const COURSE_LIST = [
     },
     { 
         cat: "Lịch sử", 
-        title: "Lịch sử & Phê bình âm nhạc", 
-        desc: "Nghiên cứu hành trình âm nhạc từ thời kỳ Phục hưng đến nghệ thuật đương đại.", 
+        title: "Lịch sử âm nhạc", 
+        desc: "Khám phá hành trình âm nhạc nhân loại qua các thời đại — hiểu sâu hơn những tác phẩm bạn yêu thích và lý do chúng trường tồn.", 
         time: "6 tháng", 
         students: "20 học viên", 
         rate: 4.8, 
@@ -115,7 +113,7 @@ const COURSE_LIST = [
     { 
         cat: "Xướng âm", 
         title: "Xướng âm & Huấn luyện thính giác", 
-        desc: "Phát triển khả năng nghe nốt, đọc bản nhạc (Sight-reading) và phản xạ tiết tấu.", 
+        desc: "Rèn \"tai nghe vàng\" — nhận ra nốt nhạc, đọc bản nhạc ngay lần đầu và phản xạ tiết tấu chuẩn xác như một nhạc sĩ chuyên nghiệp.", 
         time: "6 tháng", 
         students: "15 học viên", 
         rate: 4.7, 
@@ -124,7 +122,7 @@ const COURSE_LIST = [
     { 
         cat: "Hòa âm", 
         title: "Hòa âm & Thủ pháp phối khí", 
-        desc: "Kỹ thuật sắp xếp nhạc cụ, chuyển động bè và đặt hợp âm cho tác phẩm.", 
+        desc: "Học cách kết hợp nhiều nhạc cụ thành một bức tranh âm thanh hoàn chỉnh — kỹ năng thiết yếu cho người muốn sáng tác và phối khí.", 
         time: "1 năm", 
         students: "10 học viên", 
         rate: 5.0, 
@@ -133,7 +131,7 @@ const COURSE_LIST = [
     { 
         cat: "Lí luận", 
         title: "Sáng tác & Chỉ huy dàn nhạc", 
-        desc: "Phân tích cấu trúc tác phẩm và kỹ năng điều hành dàn nhạc giao hưởng.", 
+        desc: "Dành cho người có khát vọng lớn — học cách viết nhạc, phân tích tác phẩm và đứng trên bục chỉ huy một dàn nhạc giao hưởng.", 
         time: "2 năm", 
         students: "6 học viên", 
         rate: 5.0, 
