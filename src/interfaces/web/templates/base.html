@@ -35,7 +35,7 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', path='css/sidebar-cart.css') }}"
+      href="{{ url_for('static', path='css/sidebar-cart.css') }}?v=1.1"
     />
     <script src="{{ url_for('static', path='js/base.js') }}" defer></script>
     {% block custom_css %}{% endblock %}
@@ -301,7 +301,7 @@
     <div class="cart-backdrop" id="cartBackdrop"></div>
     <div class="cart-toast" id="cartToast" role="alert"></div>
 
-    <script src="{{ url_for('static', path='js/sidebar-cart.js') }}"></script>
+    <script src="{{ url_for('static', path='js/sidebar-cart.js') }}?v=1.1"></script>
     <script src="{{ url_for('static', path='js/hopper.js') }}" defer></script>
   </body>
 </html>
