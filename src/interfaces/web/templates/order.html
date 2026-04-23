@@ -138,193 +138,29 @@
 
   <!-- ── PRODUCT DETAIL MODAL ── -->
   <div
+    class="pd-overlay"
     id="productModal"
     onclick="handleModalOverlayClick(event)"
-    style="display: none"
   >
-    <div id="modalBody"></div>
-  </div>
+    <div class="pd-modal-box"></div>
+    <div id="modalBody" class="pd-modal-body"></div>
 
-  <!-- ── CHECKOUT MODAL ── -->
-  <div class="checkout-modal-overlay" id="checkoutModal">
-    <div class="checkout-modal">
-      <div class="modal-header">
-        <h2><i class="fa-solid fa-bag-shopping"></i> Xác nhận đơn hàng</h2>
-        <button class="modal-close" onclick="closeCheckout()">✕</button>
-      </div>
-
-      <div class="co-section">
-        <h3><i class="fa-solid fa-list-check"></i> Sản phẩm đặt mua</h3>
-        <div id="coItemList"></div>
-      </div>
-
-      <div class="co-section">
-        <h3><i class="fa-solid fa-tag"></i> Mã giảm giá</h3>
-        <p
-          id="coAppliedCoupon"
-          style="font-size: 13px; color: var(--text-muted)"
-        >
-          Chưa áp dụng
-        </p>
-      </div>
-
-      <div class="co-section">
-        <h3><i class="fa-solid fa-location-dot"></i> Thông tin giao hàng</h3>
-        <div class="co-form-grid">
-          <div>
-            <label class="co-label">Họ và tên *</label>
-            <input
-              type="text"
-              class="co-input"
-              id="co-name"
-              placeholder="Nguyễn Văn A"
-            />
-          </div>
-          <div>
-            <label class="co-label">Số điện thoại *</label>
-            <input
-              type="tel"
-              class="co-input"
-              id="co-phone"
-              placeholder="09xxxxxxxx"
-            />
-          </div>
-          <div>
-            <label class="co-label">Email</label>
-            <input
-              type="email"
-              class="co-input"
-              id="co-email"
-              placeholder="email@example.com"
-            />
-          </div>
-          <div class="full">
-            <label class="co-label">Địa chỉ giao hàng *</label>
-            <input
-              type="text"
-              class="co-input"
-              id="co-address"
-              placeholder="Số nhà, đường, quận, thành phố"
-            />
-          </div>
-          <div class="full">
-            <label class="co-label">Ghi chú đơn hàng</label>
-            <input
-              type="text"
-              class="co-input"
-              id="co-note"
-              placeholder="Yêu cầu đặc biệt…"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="co-section">
-        <h3><i class="fa-solid fa-credit-card"></i> Phương thức thanh toán</h3>
-        <input type="hidden" id="coPayMethod" />
-        <div class="pay-options">
-          <div class="pay-option" data-method="cod">
-            <input type="radio" name="payMethod" value="cod" />
-            <div>
-              <div class="pay-label">
-                <i class="fa-solid fa-money-bill-wave"></i> Thanh toán khi nhận
-                hàng (COD)
-              </div>
-              <div class="pay-desc">Trả tiền mặt khi shipper giao hàng.</div>
-            </div>
-          </div>
-          <div class="pay-option" data-method="bank">
-            <input type="radio" name="payMethod" value="bank" />
-            <div>
-              <div class="pay-label">
-                <i class="fa-solid fa-building-columns"></i> Chuyển khoản ngân
-                hàng
-              </div>
-              <div class="pay-desc">Chuyển khoản trước, xác nhận sau.</div>
-            </div>
-          </div>
-          <div class="bank-details" id="bankDetails" style="display: none">
-            <div class="bank-row">
-              <span>Ngân hàng</span><span>MB Bank</span>
-            </div>
-            <div class="bank-row">
-              <span>Số tài khoản</span><span>89779799999</span>
-            </div>
-            <div class="bank-row">
-              <span>Chủ tài khoản</span><span>CÔNG TY STRUMIFY INSTRUMENT</span>
-            </div>
-            <div class="bank-note">
-              <i class="fa-solid fa-circle-info"></i>
-              Nội dung CK: <strong>[Tên] – [SĐT] – STRUMIFY</strong>
-            </div>
-          </div>
-          <div class="pay-option" data-method="momo">
-            <input type="radio" name="payMethod" value="momo" />
-            <div>
-              <div class="pay-label">
-                <i class="fa-solid fa-mobile-screen-button"></i> Ví MoMo /
-                ZaloPay
-              </div>
-              <div class="pay-desc">SĐT: <strong>0944024055</strong></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="co-totals">
-        <div class="co-total-row">
-          <span>Tạm tính</span><span id="coSubtotal">0₫</span>
-        </div>
-        <div class="co-total-row discount">
-          <span><i class="fa-solid fa-circle-minus"></i> Giảm giá</span>
-          <span id="coDiscount">−0₫</span>
-        </div>
-        <div class="co-total-row">
-          <span>Phí vận chuyển</span>
-          <span style="color: var(--green); font-weight: 700">Miễn phí</span>
-        </div>
-        <div class="co-total-row final">
-          <span>Tổng thanh toán</span><span id="coTotal">0₫</span>
-        </div>
-      </div>
-
-      <button class="place-order-btn" onclick="placeOrder()">
-        <i class="fa-solid fa-paper-plane"></i> Đặt hàng ngay
-      </button>
+    <!-- ── TOAST ── -->
+    <div class="toast-notification" id="toastNotification">
+      <span class="toast-icon" id="toastIcon"></span>
+      <span class="toast-text" id="toastText"></span>
     </div>
   </div>
 
-  <!-- ── SUCCESS MODAL ── -->
-  <div class="success-modal-overlay" id="successModal">
-    <div class="success-modal">
-      <span class="success-icon">🎸</span>
-      <h3>Đặt hàng thành công!</h3>
-      <p>
-        Cảm ơn bạn đã tin tưởng STRUMIFY.<br />
-        Chúng tôi sẽ liên hệ xác nhận sớm nhất.
-      </p>
-      <div class="success-order-id" id="successOrderId"></div>
-      <button class="success-close-btn" onclick="closeSuccess()">
-        <i class="fa-solid fa-check"></i> Hoàn tất
-      </button>
-    </div>
-  </div>
+  <!-- PRODUCT_DATA: dùng bởi order.js (addToCart, openProductModal) -->
+  <script>
+    const PRODUCT_DATA = {{ products | tojson | safe }};
 
-  <!-- ── TOAST ── -->
-  <div class="toast-notification" id="toastNotification">
-    <span class="toast-icon" id="toastIcon"></span>
-    <span class="toast-text" id="toastText"></span>
-  </div>
+    console.log("Đã tải " + PRODUCT_DATA.length + " sản phẩm.");
+  </script>
+
+  {% endblock %} {% block custom_js %}
+  <script src="{{ url_for('static', path='js/sidebar-cart.js') }}"></script>
+  <script src="{{ url_for('static', path='js/order.js') }}"></script>
+  {% endblock %}
 </div>
-
-<!-- PRODUCT_DATA: dùng bởi order.js (addToCart, openProductModal) -->
-<script>
-  const PRODUCT_DATA = {{ products | tojson | safe }};
-
-  console.log("Đã tải " + PRODUCT_DATA.length + " sản phẩm.");
-</script>
-
-{% endblock %} {% block custom_js %}
-<script src="{{ url_for('static', path='js/sidebar-cart.js') }}"></script>
-<script src="{{ url_for('static', path='js/order.js') }}"></script>
-{% endblock %}

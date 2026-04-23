@@ -82,10 +82,6 @@ body {
 
 .topnav-right { display: flex; align-items: center; gap: 12px; }
 
-.topnav-name {
-  font-size: 13.5px; font-weight: 700; color: var(--text-2);
-}
-
 .topnav-avatar {
   width: 36px; height: 36px; border-radius: 50%;
   object-fit: cover;
@@ -592,5 +588,4 @@ body {
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: 1; }
   .topnav { padding: 0 18px; }
-  .topnav-name { display: none; }
 }

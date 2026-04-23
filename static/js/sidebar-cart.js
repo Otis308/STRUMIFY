@@ -241,9 +241,7 @@ if (typeof window.CartSidebar === 'undefined') {
 
       sidebar.innerHTML = `
         <div class="cart-sidebar-header">
-          <h3><i class="fa-solid fa-bag-shopping"></i> Giỏ hàng
-            ${this.cart.length > 0 ? `<span class="cart-count-pill">${this.cart.reduce((s,x)=>s+x.qty,0)}</span>` : ''}
-          </h3>
+          <h3><i class="fa-solid fa-bag-shopping"></i> Giỏ hàng </h3>
           <button class="btn-close-sidebar" type="button" onclick="cartSidebarInstance.hideSidebar()" aria-label="Đóng">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -255,14 +253,6 @@ if (typeof window.CartSidebar === 'undefined') {
 
         ${!isEmpty ? `
           <div class="cart-sidebar-footer">
-            <div class="sidebar-coupon-row">
-              <input id="sidebarCouponInput" type="text" placeholder="Mã giảm giá (VD: MOC10)"
-                     value="${this.couponCode}" class="sidebar-coupon-input" />
-              <button type="button" onclick="cartSidebarInstance.applyCoupon()"
-                      class="sidebar-coupon-btn">
-                Áp dụng
-              </button>
-            </div>
 
             <div class="sidebar-price-summary">
               <div class="sidebar-summary-row"><span>Số lượng sản phẩm:</span><strong>${summary.itemsCount}</strong></div>
@@ -339,18 +329,6 @@ if (typeof window.CartSidebar === 'undefined') {
               </button>
             </div>
           `).join('')}
-        </div>
-
-        <div class="promo-codes-strip">
-          <div class="promo-strip-label"><i class="fa-solid fa-tag"></i> Mã ưu đãi</div>
-          <div class="promo-chips">
-            ${featuredPromos.map(p => `
-              <span class="promo-chip" onclick="navigator.clipboard?.writeText('${p.code}').then(()=>cartSidebarInstance.showToast('✓ Đã sao chép ${p.code}','success'))" title="Nhấn để copy mã">
-                <i class="fa-solid fa-scissors"></i> ${p.code}
-                <span class="chip-label">${p.label}</span>
-              </span>
-            `).join('')}
-          </div>
         </div>
       `;
     }

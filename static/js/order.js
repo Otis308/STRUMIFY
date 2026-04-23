@@ -320,111 +320,405 @@
   /* ================================================================
     MODAL CHI TIẾT SẢN PHẨM
     ================================================================ */
-  window.openProductModal = function (id) {
-  const pData = _getProductData(id);
-  const modal = document.getElementById('productModal');
-  const body  = document.getElementById('modalBody');
-  if (!modal || !body) return;
-
-  if (!pData) {
-    showToast('Không tìm thấy dữ liệu sản phẩm', 'err');
-    return;
-  }
-
-  if (pData) {
-    // Xây dựng HTML specs
-    let specsHTML = '';
-    if (pData.specs && Object.keys(pData.specs).length) {
-      const specsEntries = Object.entries(pData.specs)
-        .filter(([, v]) => v && String(v).toLowerCase() !== 'none');
-      
-      if (specsEntries.length > 0) {
-        specsHTML = `
-          <div class="modal-specs-section">
-            <h4 class="specs-title"><i class="fa-solid fa-list-check"></i> Thông Số Kỹ Thuật</h4>
-            <div class="specs-grid">
-              ${specsEntries.map(([k, v]) => {
-                const upper = String(k || '').toUpperCase();
-                const label = (typeof specsTranslation !== 'undefined'
-                  && specsTranslation
-                  && specsTranslation[upper])
-                  ? specsTranslation[upper]
-                  : k;
-                return `
-                  <div class="spec-row">
-                    <span class="spec-label">${label}</span>
-                    <span class="spec-value">${v}</span>
-                  </div>`;
-              }).join('')}
-            </div>
-          </div>`;
-      }
+    function _buildStarsHTML(rating) {
+      const r     = parseFloat(rating) || 0;
+      const full  = Math.floor(r);
+      const half  = r - full >= 0.5 ? 1 : 0;
+      const empty = 5 - full - half;
+      let html = '<div class="pd-stars">';
+      for (let i = 0; i < full;  i++) html += '<i class="fa-solid fa-star"></i>';
+      if (half)                        html += '<i class="fa-solid fa-star-half-stroke"></i>';
+      for (let i = 0; i < empty; i++) html += '<i class="fa-regular fa-star"></i>';
+      return html + '</div>';
     }
-
-    body.innerHTML = `
-      <div class="modal-header-close">
-        <button class="modal-close-btn" onclick="closeModal()">
+   
+    /**
+     * Tạo HTML bảng thông số kỹ thuật từ object specs.
+     * Tự động dịch key sang tiếng Việt qua specsTranslation map.
+     * Lọc bỏ các giá trị null / "none" / rỗng.
+     */
+    function _buildSpecsHTML(specs) {
+      if (!specs || typeof specs !== 'object') return '';
+   
+      const entries = Object.entries(specs)
+        .filter(([, v]) => v && String(v).trim().toLowerCase() !== 'none' && String(v).trim() !== '')
+        .map(([k, v]) => ({
+          label: specsTranslation[String(k).toUpperCase()] || k,
+          value: v,
+        }));
+   
+      if (!entries.length) return '';
+   
+      return `
+        <div class="pd-specs-section">
+          <h4 class="pd-specs-title">
+            <i class="fa-solid fa-list-check"></i> Thông số kỹ thuật
+          </h4>
+          <div class="pd-specs-grid">
+            ${entries.map(({ label, value }) => `
+              <div class="pd-spec-item">
+                <span class="pd-spec-label">${label}</span>
+                <span class="pd-spec-value">${value}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    }
+   
+    /* ── WISHLIST (localStorage persist) ─────────────────────────── */
+    function _getWishlist() {
+      try { return new Set(JSON.parse(localStorage.getItem('moc_wishlist') || '[]')); }
+      catch { return new Set(); }
+    }
+    function _saveWishlist(set) {
+      localStorage.setItem('moc_wishlist', JSON.stringify([...set]));
+    }
+   
+    /* ── PUBLIC: Toggle yêu thích ────────────────────────────────── */
+    window.toggleWishlist = function (id, btn) {
+      const numId   = Number(id);
+      const wishlist = _getWishlist();
+      const icon    = btn.querySelector('i');
+      const isNow   = wishlist.has(numId);
+   
+      if (isNow) {
+        wishlist.delete(numId);
+        icon.className = 'fa-regular fa-heart';
+        btn.classList.remove('wished');
+        btn.title = 'Thêm vào yêu thích';
+        showToast('Đã bỏ khỏi danh sách yêu thích', 'info');
+      } else {
+        wishlist.add(numId);
+        icon.className = 'fa-solid fa-heart';
+        btn.classList.add('wished');
+        btn.title = 'Bỏ yêu thích';
+        showToast('Đã thêm vào yêu thích ❤', 'ok');
+        /* Hiệu ứng scale khi like */
+        btn.style.transform = 'scale(1.4)';
+        setTimeout(() => { btn.style.transform = ''; }, 280);
+      }
+      _saveWishlist(wishlist);
+    };
+   
+    /* ── PUBLIC: Qty controller ──────────────────────────────────── */
+    window.pdDecQty = function (id) {
+      const inp = document.getElementById(`pdQty-${id}`);
+      if (!inp) return;
+      inp.value = Math.max(1, (parseInt(inp.value) || 1) - 1);
+    };
+   
+    window.pdIncQty = function (id) {
+      const inp = document.getElementById(`pdQty-${id}`);
+      if (!inp) return;
+      inp.value = Math.min(99, (parseInt(inp.value) || 1) + 1);
+    };
+   
+    window.pdClampQty = function (inp) {
+      let v = parseInt(inp.value) || 1;
+      inp.value = Math.max(1, Math.min(99, v));
+    };
+   
+    /* ── PUBLIC: Add to cart từ modal (có qty) ───────────────────── */
+    window.pdAddToCart = async function (id, price) {
+      const qty = parseInt(document.getElementById(`pdQty-${id}`)?.value) || 1;
+   
+      if (!isLoggedIn()) { _openGuestModal(); return; }
+   
+      const btn = document.getElementById('pdAddBtn');
+      if (btn) {
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang thêm…';
+      }
+   
+      try {
+        const res = await fetch(`${API_BASE}/cart/add`, {
+          method:  'POST',
+          headers: authHeaders(),
+          body:    JSON.stringify({ product_id: Number(id), quantity: qty }),
+        });
+   
+        const contentType = (res.headers.get('content-type') || '').toLowerCase();
+        let data = {};
+        if (contentType.includes('application/json')) {
+          try { data = await res.json(); } catch {}
+        }
+   
+        if (!res.ok) {
+          showToast(data.detail || data.message || 'Không thể thêm vào giỏ hàng', 'err');
+          return;
+        }
+   
+        const msg = `✓ ${data.message || `Đã thêm ${qty} sản phẩm`}`;
+        closeModal();
+   
+        if (window.cartSidebarInstance) {
+          await window.cartSidebarInstance.fetchFromAPI();
+          window.cartSidebarInstance.updateBadge();
+          window.cartSidebarInstance.showSidebarQuick();
+          document.getElementById('cartSidebar')?.classList.add('active');
+          window.cartSidebarInstance.showToast(msg, 'success');
+        } else {
+          showToast(msg, 'ok');
+          const sidebar = document.getElementById('cartSidebar');
+          const overlay = document.getElementById('cartOverlay')
+                       || document.getElementById('cartBackdrop');
+          if (sidebar) { sidebar.classList.add('active', 'open'); }
+          if (overlay) overlay.classList.add('active');
+        }
+   
+        /* Visual feedback trên card */
+        const card = document.querySelector(`.product-card[data-id="${id}"]`);
+        if (card) {
+          card.classList.add('just-added');
+          setTimeout(() => card.classList.remove('just-added'), 1400);
+        }
+   
+      } catch (err) {
+        console.error('[pdAddToCart]', err);
+        showToast('Lỗi kết nối. Vui lòng thử lại!', 'err');
+      } finally {
+        if (btn) {
+          btn.disabled  = false;
+          btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ';
+        }
+      }
+    };
+   
+    /* ── PUBLIC: Mua ngay → add + redirect /cart ─────────────────── */
+    window.pdBuyNow = async function (id, price) {
+      await window.pdAddToCart(id, price);
+      /* Nếu thêm thành công (modal đã đóng), redirect sang /cart */
+      setTimeout(() => { window.location.href = '/cart'; }, 350);
+    };
+   
+    /* ═══════════════════════════════════════════════════════════════
+      openProductModal  – Entry point chính
+      Được gọi từ onclick="openProductModal({{ product.id }})" trong HTML
+     ═══════════════════════════════════════════════════════════════ */
+    window.openProductModal = function (id) {
+      const pData = _getProductData(id);
+      const modal = document.getElementById('productModal');
+      const body  = document.getElementById('modalBody');
+      if (!modal || !body) return;
+   
+      if (!pData) {
+        showToast('Không tìm thấy dữ liệu sản phẩm', 'err');
+        return;
+      }
+   
+      /* ── Tính toán dữ liệu ──────────────────────────────────────── */
+      const rating   = parseFloat(pData.rating) || 0;
+      const reviews  = parseInt(pData.reviews)  || 0;
+      const discount = (pData.orig && pData.orig > pData.price)
+        ? Math.round((1 - pData.price / pData.orig) * 100) : 0;
+      const savings  = (pData.orig && pData.orig > pData.price)
+        ? fmt(pData.orig - pData.price) : null;
+   
+      const wishlist  = _getWishlist();
+      const isWished  = wishlist.has(Number(pData.id));
+   
+      /* Trạng thái tồn kho:
+         DB hiện không có cột stock → mặc định "Còn hàng".
+         Khi bạn thêm cột stock vào DB, thay `true` bằng `(pData.stock || 0) > 0`.
+      */
+      const inStock = true;
+   
+      /* ── Build HTML ─────────────────────────────────────────────── */
+      body.innerHTML = `
+        <!-- Nút đóng modal -->
+        <button class="pd-close" onclick="closeModal()" aria-label="Đóng">
           <i class="fa-solid fa-xmark"></i>
         </button>
-      </div>
-
-      <div class="modal-grid">
-        <div class="modal-img-wrap">
-          <div class="modal-img-container">
-            ${pData.image_url
-              ? `<img class="modal-img" src="${pData.image_url}" alt="${pData.name}" loading="lazy">`
-              : `<div class="modal-img-placeholder">
-                   <i class="fa-solid fa-guitar"></i>
-                   <p>Không có ảnh</p>
-                 </div>`}
-          </div>
-        </div>
-        
-        <div class="modal-info">
-          <div class="modal-content-inner">
-            <p class="product-category">${pData.category || pData.cat || 'Nhạc cụ'}</p>
-            <h2 class="modal-product-name">${pData.name}</h2>
-            
-            <div class="modal-rating">
-              <span class="stars-display">★★★★★</span>
-              <span class="rating-text">4.9 (94 đánh giá)</span>
+   
+        <!-- GRID CHÍNH: 2 cột (Desktop) / 1 cột (Mobile) -->
+        <div class="pd-grid">
+   
+          <!-- ══ CỘT TRÁI: Hình ảnh ══════════════════════════════ -->
+          <div class="pd-img-col">
+            <div class="pd-img-main">
+              ${pData.image_url
+                ? `<img
+                    src="${pData.image_url}"
+                    alt="${pData.name}"
+                    loading="lazy"
+                    onerror="this.onerror=null;this.style.display='none';
+                             this.nextElementSibling.style.display='flex'"
+                  />`
+                : ''
+              }
+              <div class="pd-img-ph" style="${pData.image_url ? 'display:none' : ''}">
+                <i class="fa-solid fa-guitar"></i>
+                <span>Chưa có ảnh</span>
+              </div>
             </div>
-
-            <div class="modal-price-block">
-              <p class="current-price">${fmt(pData.price)}</p>
-              ${pData.orig && pData.orig > pData.price
-                ? `<p class="original-price">${fmt(pData.orig)}</p>` : ''}
-            </div>
-
-            ${pData.description ? `
-              <div class="modal-desc-box">
-                <p class="modal-desc">${pData.description}</p>
+   
+            ${discount > 0 ? `
+              <div class="pd-discount-ribbon">
               </div>` : ''}
-
-            <button class="modal-add-btn" onclick="addToCart(${pData.id}, ${pData.price}); closeModal()">
-              <i class="fa-solid fa-cart-plus"></i> Thêm Vào Giỏ Hàng
-            </button>
           </div>
+   
+          <!-- ══ CỘT PHẢI: Thông tin sản phẩm ════════════════════ -->
+          <div class="pd-info-col">
+   
+            <!-- 1. Tags danh mục + thương hiệu -->
+            <div class="pd-tags">
+              ${pData.cat   ? `<span class="pd-tag-cat">${pData.cat}</span>`     : ''}
+              ${pData.brand ? `<span class="pd-tag-brand">${pData.brand}</span>` : ''}
+            </div>
+   
+            <!-- 2. Tên sản phẩm -->
+            <h2 class="pd-name">${pData.name}</h2>
+   
+            <!-- 3. Rating + Số lượt đánh giá + Nút Wishlist (cùng 1 hàng) -->
+            <div class="pd-rating-row">
+              ${_buildStarsHTML(rating)}
+              <span class="pd-rating-num">
+                ${rating > 0 ? rating.toFixed(1) : 'Chưa có'}
+              </span>
+              ${reviews > 0 ? `<span class="pd-review-cnt">(${reviews} đánh giá)</span>` : ''}
+   
+              <!-- Nút yêu thích với hiệu ứng toggle -->
+              <button
+                class="pd-wishlist-btn ${isWished ? 'wished' : ''}"
+                id="pdWishBtn-${pData.id}"
+                onclick="toggleWishlist(${pData.id}, this)"
+                title="${isWished ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}"
+                aria-label="${isWished ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}"
+              >
+                <i class="${isWished ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+              </button>
+            </div>
+   
+            <!-- 4. Giá bán + Giá gốc gạch chéo -->
+            <div class="pd-price-block">
+              <span class="pd-price-main">${fmt(pData.price)}</span>
+              ${pData.orig && pData.orig > pData.price ? `
+                <span class="pd-price-orig">${fmt(pData.orig)}</span>
+                ${savings ? `<span class="pd-price-badge">Tiết kiệm ${savings}</span>` : ''}
+              ` : ''}
+            </div>
+   
+            <!-- 5. Badge trạng thái tồn kho -->
+            <div class="pd-stock-badge ${inStock ? 'in-stock' : 'out-stock'}">
+              <i class="fa-solid ${inStock ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+              <span>${inStock ? 'Còn hàng – Giao hàng toàn quốc' : 'Tạm hết hàng'}</span>
+            </div>
+   
+            <!-- 6. Mô tả ngắn -->
+            ${pData.description ? `
+              <p class="pd-desc">${pData.description}</p>
+            ` : ''}
+   
+            <!-- 7. Điều khiển số lượng -->
+            ${inStock ? `
+              <div class="pd-qty-section">
+                <span class="pd-qty-label">Số lượng:</span>
+                <div class="pd-qty-ctrl">
+                  <button
+                    class="pd-qty-btn"
+                    onclick="pdDecQty(${pData.id})"
+                    aria-label="Giảm số lượng"
+                  >−</button>
+                  <input
+                    type="number"
+                    class="pd-qty-input"
+                    id="pdQty-${pData.id}"
+                    value="1"
+                    min="1"
+                    max="99"
+                    onchange="pdClampQty(this)"
+                    onkeyup="pdClampQty(this)"
+                    aria-label="Số lượng"
+                  />
+                  <button
+                    class="pd-qty-btn"
+                    onclick="pdIncQty(${pData.id})"
+                    aria-label="Tăng số lượng"
+                  >+</button>
+                </div>
+              </div>
+            ` : ''}
+   
+            <!-- 8. CTA Buttons -->
+            <div class="pd-actions">
+              ${inStock ? `
+                <button
+                  class="pd-btn-add"
+                  id="pdAddBtn"
+                  onclick="pdAddToCart(${pData.id}, ${pData.price})"
+                >
+                  <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                </button>
+                <button
+                  class="pd-btn-buy"
+                  onclick="pdBuyNow(${pData.id}, ${pData.price})"
+                >
+                  <i class="fa-solid fa-bolt"></i> Mua ngay
+                </button>
+              ` : `
+                <button class="pd-btn-add disabled" disabled>
+                  <i class="fa-solid fa-clock"></i> Tạm hết hàng
+                </button>
+              `}
+            </div>
+   
+            <!-- 9. Cam kết dịch vụ nhỏ -->
+            <div class="pd-guarantees">
+              <div class="pd-guarantee-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Bảo hành chính hãng</span>
+              </div>
+              <div class="pd-guarantee-item">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Giao hàng toàn quốc</span>
+              </div>
+              <div class="pd-guarantee-item">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>Đổi trả 7 ngày</span>
+              </div>
+            </div>
+   
+          </div>
+          <!-- /pd-info-col -->
         </div>
-      </div>
-
-      ${specsHTML}
-    `;
-  }
-  modal.style.display = 'flex';
-  modal.classList.add('active');
-};
-
-  window.closeModal = function() {
-    const m = document.getElementById('productModal');
-    if (!m) return;
-    m.classList.remove('active');
-    setTimeout(() => { m.style.display = 'none'; }, 200);
-  };
-  window.handleModalOverlayClick = function(e) {
-    if (e.target.id === 'productModal') window.closeModal();
-  };
-
+        <!-- /pd-grid -->
+   
+        <!-- SPECS TABLE ở dưới grid, full-width -->
+        ${_buildSpecsHTML(pData.specs)}
+      `;
+   
+      /* Show modal với animation */
+      modal.style.display = 'flex';
+      requestAnimationFrame(() => modal.classList.add('active'));
+   
+      /* Khóa scroll body khi modal mở */
+      document.body.style.overflow = 'hidden';
+    };
+   
+    /* ── closeModal & overlay click ─────────────────────────────── */
+    window.closeModal = function () {
+      const m = document.getElementById('productModal');
+      if (!m) return;
+      m.classList.remove('active');
+      document.body.style.overflow = '';
+      /* Đợi transition kết thúc rồi mới display:none */
+      setTimeout(() => { m.style.display = 'none'; }, 220);
+    };
+   
+    window.handleModalOverlayClick = function (e) {
+      /* Chỉ đóng khi click vào chính backdrop, không phải modal-box */
+      if (e.target.id === 'productModal') window.closeModal();
+    };
+   
+    /* ── Đóng modal bằng phím Escape ────────────────────────────── */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const m = document.getElementById('productModal');
+        if (m && m.classList.contains('active')) window.closeModal();
+      }
+    });
+ 
+    
   /* ================================================================
     LỌC – TÌM KIẾM – SẮP XẾP
     ================================================================ */

@@ -32,9 +32,9 @@ const COUPONS = {
   'MOC10':    { type: 'percent', value: 10,        label: 'Giảm 10%' },
   'MOC20':    { type: 'percent', value: 20,        label: 'Giảm 20%' },
   'MOC30':    { type: 'percent', value: 30,        label: 'Giảm 30%' },
-  'NEWUSER':  { type: 'percent', value: 15,        label: 'Khách mới −15%' },
-  'GUITAR50': { type: 'fixed',   value: 500_000,   label: 'Giảm 500.000₫' },
-  'SALE100':  { type: 'fixed',   value: 1_000_000, label: 'Giảm 1.000.000₫' },
+  'NEWUSER':  { type: 'percent', value: 15,        label: 'Khách mới -15%' },
+  'GUITAR50': { type: 'fixed',   value: 500_000,   label: 'Giảm 500.000VND' },
+  'SALE100':  { type: 'fixed',   value: 1_000_000, label: 'Giảm 1.000.000VND' },
   'VIP25':    { type: 'percent', value: 25,        label: 'VIP −25%' },
 };
 
@@ -262,11 +262,11 @@ function applyCoupon() {
   if (!code) return;
   if (COUPONS[code]) {
     couponApplied = { code, ...COUPONS[code] };
-    if (msg) { msg.textContent = `✓ ${couponApplied.label}`; msg.className = 'coupon-msg ok'; }
+    if (msg) { msg.textContent = `✅ ${couponApplied.label}`; msg.className = 'coupon-msg ok'; }
     showToast(`Áp dụng mã "${code}" thành công!`, 'ok');
   } else {
     couponApplied = null;
-    if (msg) { msg.textContent = `✗ Mã không hợp lệ`; msg.className = 'coupon-msg err'; }
+    if (msg) { msg.textContent = `⚠️ Mã không hợp lệ `; msg.className = 'coupon-msg err'; }
   }
   updateSummaryDisplays();
 }
